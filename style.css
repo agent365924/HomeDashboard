@@ -28,9 +28,10 @@
   --live-bg:      #0f2a1a;
   --live-fg:      #4ade80;
   --live-dot:     #4ade80;
-  --toggle-bg:    #2a2f3a;
-  --toggle-border:#3a4050;
-  --toggle-knob:  #e8e4dc;
+  --text-warm:    #7a6f5a;
+  --toggle-bg:    #2e2318;
+  --toggle-border:#4a3828;
+  --toggle-knob:  #d4a96a;
   --toggle-x:     0px;
   --house-opacity: 0.5;
   --house-blend:   normal;
@@ -60,12 +61,12 @@ html.light {
   --live-bg:      #eaf3de;
   --live-fg:      #3b6d11;
   --live-dot:     #63c521;
-  --toggle-bg:    #e0ddd5;
-  --toggle-border:#ccc;
-  --toggle-knob:  #1a1a18;
+  --text-warm:    #a08060;
+  --toggle-bg:    #e8d5b0;
+  --toggle-border:#c8a870;
+  --toggle-knob:  #7a4a18;
   --toggle-x:     16px;
-  --tint-opacity: 0;
-  --house-opacity: 1;
+  --house-opacity: 0.9;
   --house-blend:  multiply;
 }
 
@@ -73,7 +74,7 @@ html.light {
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'DM Mono', monospace;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
@@ -103,16 +104,17 @@ body {
   font-family: 'DM Mono', monospace;
 }
 .subtitle {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
-  margin-top: 3px;
+  margin-top: 4px;
   font-family: 'DM Mono', monospace;
+  font-weight: 400;
 }
 .header-right {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 2px;
+  padding-top: 6px;
 }
 
 /* status indicators */
@@ -120,15 +122,16 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   font-family: 'DM Mono', monospace;
+  font-weight: 400;
   border-radius: 99px;
-  padding: 4px 10px;
+  padding: 4px 12px;
 }
 .status-live  { background: var(--live-bg);  color: var(--live-fg); }
 .status-stale { background: var(--badge-warn-bg); color: var(--badge-warn-fg); }
-.status-error { background: #2a0f0f; color: #f87171; }
-html.light .status-error { background: #fee2e2; color: #b91c1c; }
+.status-error { background: #2a1a0a; color: #fb923c; }
+html.light .status-error { background: #fff7ed; color: #c2410c; }
 .hidden { display: none !important; }
 
 .live-dot {
@@ -139,7 +142,7 @@ html.light .status-error { background: #fee2e2; color: #b91c1c; }
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 
-/* theme toggle */
+/* theme toggle — warm amber */
 .theme-toggle {
   cursor: pointer;
   width: 36px; height: 20px;
@@ -208,15 +211,17 @@ html.light .card {
 .card-br { bottom: 16px; right: 0; }
 
 .card-icon  { font-size: 24px; line-height: 1; margin-bottom: 8px; }
-.card-label { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); }
-.card-value { font-size: 36px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.1; margin: 4px 0 0; }
-.card-value em { font-size: 16px; font-weight: 400; color: var(--text-muted); font-style: normal; }
+.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-warm); font-family: 'DM Mono', monospace; font-weight: 400; }
+.card-value { font-size: 36px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.1; margin: 4px 0 0; font-family: 'DM Mono', monospace; }
+.card-value em { font-size: 16px; font-weight: 400; color: var(--text-warm); font-style: normal; font-family: 'DM Mono', monospace; }
 .card-row {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: 13px;
+  color: var(--text-warm);
   margin-top: 8px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 400;
 }
 .card-row b {
   font-weight: 500;
@@ -251,11 +256,12 @@ html.light .card {
 /* ── Section wrapper ───────────────────────────────────────── */
 .section { margin-top: 20px; }
 .section-label {
-  font-size: 10px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: .08em;
-  color: var(--text-muted);
+  letter-spacing: .1em;
+  color: var(--text-warm);
   font-family: 'DM Mono', monospace;
+  font-weight: 400;
   margin-bottom: 10px;
 }
 
@@ -284,13 +290,14 @@ html.light .card {
   align-items: center;
   padding: 8px 0;
   border-bottom: 0.5px solid var(--border-sub);
-  font-size: 14px;
+  font-size: 13px;
 }
 .sys-row:last-child { border-bottom: none; }
-.sys-key { color: var(--text-muted); font-family: 'DM Sans', sans-serif; }
+.sys-key { color: var(--text-warm); font-family: 'DM Mono', monospace; font-weight: 400; }
 .sys-val {
   font-family: 'DM Mono', monospace;
   font-size: 13px;
+  font-weight: 500;
   color: var(--text);
   text-align: right;
 }
@@ -298,14 +305,16 @@ html.light .card {
 /* badges */
 .badge {
   font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  padding: 2px 8px;
+  font-size: 11px;
+  padding: 3px 10px;
   border-radius: 99px;
   font-weight: 500;
 }
 .badge-ok   { background: var(--badge-ok-bg);   color: var(--badge-ok-fg); }
 .badge-warn { background: var(--badge-warn-bg);  color: var(--badge-warn-fg); }
 .badge-off  { background: var(--badge-off-bg);   color: var(--badge-off-fg); }
+.badge-info { background: #1a2a40; color: #7ab8f0; }
+html.light .badge-info { background: #e6f1fb; color: #185fa5; }
 
 /* ── Monthly history ───────────────────────────────────────── */
 .month-card {
@@ -320,13 +329,14 @@ html.light .card {
 .month-row {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: 13px;
+  color: var(--text-warm);
   padding: 3px 0;
   font-family: 'DM Mono', monospace;
+  font-weight: 400;
 }
 .month-row b {
-  font-weight: 400;
+  font-weight: 500;
   font-family: 'DM Mono', monospace;
   font-size: 13px;
   color: var(--text);
