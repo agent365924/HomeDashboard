@@ -306,7 +306,6 @@ html.light .sys-card {
 }
 .sys-row:last-child { border-bottom: none; }
 .sys-key { color: var(--text-warm); font-family: 'Barlow', sans-serif; font-weight: 400; letter-spacing: 0.03em; }
-.sys-key.priority { color: var(--live-fg); font-weight: 500; letter-spacing: 0.03em; }
 .sys-val {
   font-family: 'Barlow', sans-serif;
   font-size: 13px;
@@ -325,11 +324,14 @@ html.light .sys-card {
   font-weight: 500;
   letter-spacing: 0.04em;
 }
-.badge-ok   { background: var(--badge-ok-bg);   color: var(--badge-ok-fg); }
-.badge-warn { background: var(--badge-warn-bg);  color: var(--badge-warn-fg); }
-.badge-off  { background: var(--badge-off-bg);   color: var(--badge-off-fg); }
-.badge-info { background: #1a2a40; color: #7ab8f0; }
-html.light .badge-info { background: #e6f1fb; color: #185fa5; }
+.badge-ok   { background: #1e2a1a; color: #a8c890; }
+html.light .badge-ok { background: #e8f0e0; color: #5a7840; }
+.badge-warn { background: #2a2218; color: #c8a870; }
+html.light .badge-warn { background: #f0e8d8; color: #8a6030; }
+.badge-off  { background: #1e1e1a; color: #706860; }
+html.light .badge-off { background: #e8e4dc; color: #908880; }
+.badge-info { background: #1e2228; color: #a0b8c8; }
+html.light .badge-info { background: #e0e8f0; color: #507090; }
 
 /* ── Monthly history ───────────────────────────────────────── */
 .month-card {
@@ -370,9 +372,10 @@ html.light .month-card {
 .month-skeleton {
   height: 80px;
   border-radius: 8px;
-  background: linear-gradient(90deg, var(--bg-hover) 25%, var(--border-sub) 50%, var(--bg-hover) 75%);
-  background-size: 200% 100%;
+  background: rgba(255,255,255,0.06);
   animation: shimmer 1.4s infinite;
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
 }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
