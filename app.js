@@ -7,7 +7,33 @@ import { getAuth, signInWithEmailAndPassword,
          onAuthStateChanged }          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getDatabase, ref, onValue }   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-/* ── Firebase config ─────────────────────────────────────── */
+/* ── Weather code map (WMO) ──────────────────────────────── */
+const WX = {
+  0:  { label: 'Clear sky',       icon: '☀️' },
+  1:  { label: 'Mainly clear',    icon: '🌤️' },
+  2:  { label: 'Partly cloudy',   icon: '⛅' },
+  3:  { label: 'Overcast',        icon: '☁️' },
+  45: { label: 'Foggy',           icon: '🌫️' },
+  48: { label: 'Icy fog',         icon: '🌫️' },
+  51: { label: 'Light drizzle',   icon: '🌦️' },
+  53: { label: 'Drizzle',         icon: '🌦️' },
+  55: { label: 'Heavy drizzle',   icon: '🌧️' },
+  61: { label: 'Light rain',      icon: '🌧️' },
+  63: { label: 'Rain',            icon: '🌧️' },
+  65: { label: 'Heavy rain',      icon: '🌧️' },
+  71: { label: 'Light snow',      icon: '🌨️' },
+  73: { label: 'Snow',            icon: '❄️' },
+  75: { label: 'Heavy snow',      icon: '❄️' },
+  77: { label: 'Snow grains',     icon: '🌨️' },
+  80: { label: 'Rain showers',    icon: '🌦️' },
+  81: { label: 'Showers',         icon: '🌧️' },
+  82: { label: 'Heavy showers',   icon: '⛈️' },
+  85: { label: 'Snow showers',    icon: '🌨️' },
+  86: { label: 'Heavy snow showers', icon: '❄️' },
+  95: { label: 'Thunderstorm',    icon: '⛈️' },
+  96: { label: 'Thunderstorm',    icon: '⛈️' },
+  99: { label: 'Thunderstorm',    icon: '⛈️' },
+};
 const firebaseConfig = {
   apiKey:            'AIzaSyBhjBzQPlaGYicVXw015qoQRMkSQXyOMfU',
   authDomain:        'homedashboard-5b2e0.firebaseapp.com',
@@ -126,6 +152,10 @@ function renderLive(d) {
 
   /* weather */
   set('wx-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) + '°' : '—°');
+  const wx = WX[d.weathercode] ?? { label: '—', icon: '⛅' };
+  const wxIcon = document.getElementById('wx-icon');
+  if (wxIcon) wxIcon.textContent = wx.icon;
+  set('wx-desc', wx.label);
 
   /* battery */
   set('bat-soc', fmt(d.battery_soc, 1));
