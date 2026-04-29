@@ -132,18 +132,14 @@ function renderLive(d) {
   set('bat-kw',  fmt(Math.abs(d.battery_kw), 2) + ' kW');
   set('bat-mode-label', d.battery_kw >= 0 ? 'Charging' : 'Discharging');
 
-  /* grid */
-  const exporting = d.grid_export_kw > 0;
-  set('grid-label',     exporting ? 'To Grid'   : 'From Grid');
-  set('grid-main',      exporting ? fmt(d.grid_export_kw, 2) : fmt(d.grid_import_kw, 2));
-  set('grid-sub-label', exporting ? 'From Grid' : 'To Grid');
-  set('grid-sub',       exporting
-    ? fmt(d.grid_import_kw, 2) + ' kWh'
-    : fmt(d.grid_export_kw, 2) + ' kWh');
+  /* grid / consumption */
+  set('grid-main',   fmt(d.consumption_kw, 2));
+  set('grid-import', fmt(d.grid_import_kw, 2) + ' kW');
+  set('grid-export', fmt(d.grid_export_kw, 2) + ' kW');
 
   /* connector line color */
   const lineGrid = document.getElementById('line-grid');
-  if (lineGrid) lineGrid.className.baseVal = 'line ' + (exporting ? 'line-export' : 'line-import');
+  if (lineGrid) lineGrid.className.baseVal = 'line ' + (d.grid_export_kw > 0 ? 'line-export' : 'line-import');
 
   /* cost — fetched from config node; placeholder calc here */
   const costEl = document.getElementById('cost-val');
