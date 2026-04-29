@@ -6,7 +6,7 @@
   <title>Home Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Google+Sans+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -92,6 +92,90 @@
         <div class="house-tint" id="house-tint"></div>
       </div>
     </div>
+
+    <!-- Battery card -->
+    <div class="card card-bl">
+      <div class="card-icon">🔋</div>
+      <div class="card-label">Battery SoC</div>
+      <div class="card-value"><span id="bat-soc">—</span><em>%</em></div>
+      <div class="card-row"><span id="bat-mode-label">Standby</span><b id="bat-kw">— kW</b></div>
+    </div>
+
+    <!-- Grid card -->
+    <div class="card card-br">
+      <div class="card-icon" id="grid-icon">🔌</div>
+      <div class="card-label" id="grid-label">Grid</div>
+      <div class="card-value"><span id="grid-main">—</span> <em>kWh</em></div>
+      <div class="card-row"><span id="grid-sub-label">From Grid</span><b id="grid-sub">— kWh</b></div>
+      <div class="card-row"><span>Energy Costs</span><b id="cost-val" class="cost-neutral">— €</b></div>
+    </div>
+
+  </div>
+
+  <!-- System status -->
+  <div class="section">
+    <div class="section-label">System status</div>
+    <div class="sys-card">
+      <div class="sys-grid">
+        <div class="sys-col">
+          <div class="sys-row">
+            <span class="sys-key">Battery mode</span>
+            <span class="badge" id="sys-bat-mode">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Battery standby</span>
+            <span class="badge" id="sys-bat-standby">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Backup mode</span>
+            <span class="badge" id="sys-backup">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Meter mode</span>
+            <span class="badge" id="sys-meter">—</span>
+          </div>
+        </div>
+        <div class="sys-col">
+          <div class="sys-row">
+            <span class="sys-key">Today's generation</span>
+            <span class="sys-val" id="sys-e-day">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Year to date</span>
+            <span class="sys-val" id="sys-e-year">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Lifetime total</span>
+            <span class="sys-val" id="sys-e-total">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Autonomy</span>
+            <span class="sys-val" id="sys-autonomy">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Self-consumption</span>
+            <span class="sys-val" id="sys-self">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly overview -->
+  <div class="section">
+    <div class="section-label">Monthly overview</div>
+    <div id="history-list">
+      <div class="month-card">
+        <div class="month-skeleton"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script type="module" src="app.js"></script>
+</body>
+</html>    </div>
 
     <!-- Battery card -->
     <div class="card card-bl">
