@@ -121,7 +121,7 @@ function subscribeLive() {
 
 function renderLive(d) {
   /* generation */
-  set('gen-now', fmt(d.generation_kw, 2) + ' kW');
+  set('gen-autonomy', d.rel_self_consumption != null ? fmt(d.rel_self_consumption, 1) + ' %' : '— %');
   set('gen-day', d.e_day_kwh != null ? fmt(d.e_day_kwh, 2) : '0,00');
 
   /* weather */
