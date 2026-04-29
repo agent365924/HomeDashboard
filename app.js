@@ -122,7 +122,7 @@ function subscribeLive() {
 function renderLive(d) {
   /* generation */
   set('gen-now', fmt(d.generation_kw, 2) + ' kW');
-  set('gen-day', d.e_day_kwh != null ? fmt(d.e_day_kwh, 1) : '—');
+  set('gen-day', d.e_day_kwh != null ? fmt(d.e_day_kwh, 2) : '0,00');
 
   /* weather */
   set('wx-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) : '—');
@@ -164,7 +164,7 @@ function renderLive(d) {
   set('sys-e-day',    d.e_day_kwh  != null ? fmt(d.e_day_kwh,  1) + ' kWh' : '—');
   set('sys-e-year',   d.e_year_kwh != null ? fmt(d.e_year_kwh, 0) + ' kWh' : '—');
   set('sys-e-total',  d.e_total_kwh != null
-    ? (d.e_total_kwh / 1000).toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' MWh'
+    ? (d.e_total_kwh / 1000000).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' MWh'
     : '—');
   set('sys-autonomy', d.rel_autonomy       != null ? fmt(d.rel_autonomy, 1) + ' %' : '—');
   set('sys-self',     d.rel_self_consumption != null ? fmt(d.rel_self_consumption, 1) + ' %' : '—');
