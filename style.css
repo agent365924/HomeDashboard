@@ -2,7 +2,7 @@
    Home Dashboard — Stylesheet
    ═══════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Google+Sans+Mono:wght@400;500&display=swap');
 
 /* ── Variables: dark (default) ─────────────────────────────── */
 :root {
@@ -74,7 +74,7 @@ html.light {
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
@@ -101,13 +101,13 @@ body {
   font-size: 36px;
   font-weight: 500;
   letter-spacing: 0.5px;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
 }
 .subtitle {
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 4px;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-weight: 400;
 }
 .header-right {
@@ -123,7 +123,7 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-weight: 400;
   border-radius: 99px;
   padding: 4px 12px;
@@ -211,21 +211,21 @@ html.light .card {
 .card-br { bottom: 16px; right: 0; }
 
 .card-icon  { font-size: 24px; line-height: 1; margin-bottom: 8px; }
-.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-warm); font-family: 'DM Mono', monospace; font-weight: 400; }
-.card-value { font-size: 36px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.1; margin: 4px 0 0; font-family: 'DM Mono', monospace; }
-.card-value em { font-size: 16px; font-weight: 400; color: var(--text-warm); font-style: normal; font-family: 'DM Mono', monospace; }
+.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-warm); font-family: 'Google Sans Mono', monospace; font-weight: 400; }
+.card-value { font-size: 36px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.1; margin: 4px 0 0; font-family: 'Google Sans Mono', monospace; }
+.card-value em { font-size: 16px; font-weight: 400; color: var(--text-warm); font-style: normal; font-family: 'Google Sans Mono', monospace; }
 .card-row {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
   color: var(--text-warm);
   margin-top: 8px;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-weight: 400;
 }
 .card-row b {
   font-weight: 500;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-size: 13px;
   color: var(--text);
 }
@@ -260,7 +260,7 @@ html.light .card {
   text-transform: uppercase;
   letter-spacing: .1em;
   color: var(--text-warm);
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-weight: 400;
   margin-bottom: 10px;
 }
@@ -293,9 +293,9 @@ html.light .card {
   font-size: 13px;
 }
 .sys-row:last-child { border-bottom: none; }
-.sys-key { color: var(--text-warm); font-family: 'DM Mono', monospace; font-weight: 400; }
+.sys-key { color: var(--text-warm); font-family: 'Google Sans Mono', monospace; font-weight: 400; }
 .sys-val {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
@@ -304,7 +304,7 @@ html.light .card {
 
 /* badges */
 .badge {
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 99px;
@@ -325,19 +325,19 @@ html.light .badge-info { background: #e6f1fb; color: #185fa5; }
   margin-bottom: 9px;
   transition: background .3s, border-color .3s;
 }
-.month-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; font-family: 'DM Mono', monospace; }
+.month-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; font-family: 'Google Sans Mono', monospace; }
 .month-row {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
   color: var(--text-warm);
   padding: 3px 0;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-weight: 400;
 }
 .month-row b {
   font-weight: 500;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Google Sans Mono', monospace;
   font-size: 13px;
   color: var(--text);
 }
@@ -397,7 +397,7 @@ html.light .badge-info { background: #e6f1fb; color: #185fa5; }
   padding: 10px 14px;
   font-size: 14px;
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Google Sans', sans-serif;
   transition: border-color .2s;
 }
 .login-form input:focus {
@@ -415,7 +415,7 @@ html.light .badge-info { background: #e6f1fb; color: #185fa5; }
 .login-error { font-size: 12px; color: #f87171; text-align: center; min-height: 1.2em; display: none; }
 .login-error.visible { display: block; }
 
-.btn { cursor: pointer; border: none; font-family: 'DM Sans', sans-serif; font-size: 14px; transition: all .2s; }
+.btn { cursor: pointer; border: none; font-family: 'Google Sans', sans-serif; font-size: 14px; transition: all .2s; }
 .btn-primary {
   background: #2563eb; color: #fff;
   border-radius: 10px; padding: 10px 0;
