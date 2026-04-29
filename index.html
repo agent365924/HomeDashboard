@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Login overlay ──────────────────────────────────────── -->
+<div class="login-overlay" id="login-overlay">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-icon">⚡</div>
+      <h2 class="login-title">Home Dashboard</h2>
+      <p class="login-subtitle">Sign in to continue</p>
+    </div>
+    <div class="login-form">
+      <div class="form-group">
+        <label for="email-input">Email</label>
+        <input type="email" id="email-input" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label for="password-input">Password</label>
+        <input type="password" id="password-input" placeholder="············" autocomplete="current-password">
+      </div>
+      <div class="login-error" id="login-error">Incorrect email or password.</div>
+      <button class="btn btn-primary login-btn" id="login-btn">Enter</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main app ────────────────────────────────────────────── -->
+<div class="app" id="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="title">Home Dashboard</div>
+      <div class="subtitle" id="last-update">Connecting…</div>
+    </div>
+    <div class="header-right">
+      <div class="status-live hidden" id="status-live">
+        <div class="live-dot"></div>live
+      </div>
+      <div class="status-stale hidden" id="status-stale">stale</div>
+      <div class="status-error hidden" id="status-error">Pi offline</div>
+      <div class="theme-toggle" id="theme-toggle" title="Toggle theme">
+        <div class="theme-knob"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero scene -->
+  <div class="scene">
+
+    <!-- Connector lines -->
+    <svg class="connectors" viewBox="0 0 760 360" preserveAspectRatio="none">
+      <!-- generation → house -->
+      <line class="line line-solar" x1="172" y1="80"  x2="295" y2="155"/>
+      <!-- weather → house -->
+      <line class="line line-neutral" x1="588" y1="80"  x2="465" y2="155"/>
+      <!-- battery → house -->
+      <line class="line line-battery" id="line-battery" x1="172" y1="285" x2="295" y2="215"/>
+      <!-- grid → house -->
+      <line class="line line-grid" id="line-grid" x1="588" y1="285" x2="465" y2="215"/>
+    </svg>
+
+    <!-- Generation card -->
+    <div class="card card-tl">
+      <div class="card-icon">⚡</div>
+      <div class="card-label">Generation</div>
+      <div class="card-value"><span id="gen-day">—</span> <em>kWh</em></div>
+      <div class="card-row"><span>Current</span><b id="gen-now">— kW</b></div>
+    </div>
+
+    <!-- Weather card -->
+    <div class="card card-tr">
+      <div class="card-icon" id="wx-icon">⛅</div>
+      <div class="card-label">Weather</div>
+      <div class="card-value"><span id="wx-temp">—</span><em>°</em></div>
+    </div>
+
+    <!-- House image -->
+    <div class="house">
+      <div class="house-wrap">
+        <img src="home_render.png" alt="House" id="house-img">
+        <div class="house-tint" id="house-tint"></div>
+      </div>
+    </div>
+
+    <!-- Battery card -->
+    <div class="card card-bl">
+      <div class="card-icon">🔋</div>
+      <div class="card-label">Battery SoC</div>
+      <div class="card-value"><span id="bat-soc">—</span><em>%</em></div>
+      <div class="card-row"><span id="bat-mode-label">Standby</span><b id="bat-kw">— kW</b></div>
+    </div>
+
+    <!-- Grid card -->
+    <div class="card card-br">
+      <div class="card-icon" id="grid-icon">🔌</div>
+      <div class="card-label" id="grid-label">Grid</div>
+      <div class="card-value"><span id="grid-main">—</span> <em>kWh</em></div>
+      <div class="card-row"><span id="grid-sub-label">From Grid</span><b id="grid-sub">— kWh</b></div>
+      <div class="card-row"><span>Energy Costs</span><b id="cost-val" class="cost-neutral">— €</b></div>
+    </div>
+
+  </div>
+
+  <!-- System status -->
+  <div class="section">
+    <div class="section-label">System status</div>
+    <div class="sys-card">
+      <div class="sys-grid">
+        <div class="sys-col">
+          <div class="sys-row">
+            <span class="sys-key">Battery mode</span>
+            <span class="badge" id="sys-bat-mode">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Battery standby</span>
+            <span class="badge" id="sys-bat-standby">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Backup mode</span>
+            <span class="badge" id="sys-backup">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Meter mode</span>
+            <span class="sys-val" id="sys-meter">—</span>
+          </div>
+        </div>
+        <div class="sys-col">
+          <div class="sys-row">
+            <span class="sys-key">Today's generation</span>
+            <span class="sys-val" id="sys-e-day">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Year to date</span>
+            <span class="sys-val" id="sys-e-year">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Lifetime total</span>
+            <span class="sys-val" id="sys-e-total">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Autonomy</span>
+            <span class="sys-val" id="sys-autonomy">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Self-consumption</span>
+            <span class="sys-val" id="sys-self">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly overview -->
+  <div class="section">
+    <div class="section-label">Monthly overview</div>
+    <div id="history-list">
+      <div class="month-card">
+        <div class="month-skeleton"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
