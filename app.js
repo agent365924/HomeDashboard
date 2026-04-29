@@ -125,7 +125,7 @@ function renderLive(d) {
   set('gen-day', d.e_day_kwh != null ? fmt(d.e_day_kwh, 2) : '0,00');
 
   /* weather */
-  set('wx-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) : '—');
+  set('wx-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) + '°' : '—°');
 
   /* battery */
   set('bat-soc', fmt(d.battery_soc, 1));
@@ -160,7 +160,7 @@ function renderLive(d) {
     d.battery_standby ? 'warn' : 'off');
   setBadge('sys-backup',      d.backup_mode ? 'on' : 'off',
     d.backup_mode ? 'warn' : 'off');
-  set('sys-meter',    d.meter_mode ?? '—');
+  setBadge('sys-meter', d.meter_mode ?? '—', 'info');
   set('sys-e-day',    d.e_day_kwh  != null ? fmt(d.e_day_kwh,  1) + ' kWh' : '—');
   set('sys-e-year',   d.e_year_kwh != null ? fmt(d.e_year_kwh, 0) + ' kWh' : '—');
   set('sys-e-total',  d.e_total_kwh != null
