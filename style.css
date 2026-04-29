@@ -2,7 +2,7 @@
    Home Dashboard — Stylesheet
    ═══════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Google+Sans+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Semi+Condensed:wght@400;500&display=swap');
 
 /* ── Variables: dark (default) ─────────────────────────────── */
 :root {
@@ -28,7 +28,9 @@
   --live-bg:      #0f2a1a;
   --live-fg:      #4ade80;
   --live-dot:     #4ade80;
-  --text-warm:    #7a6f5a;
+  --text-warm:    #8c7d6a;
+  --text-sand:    #6e6054;
+  --text-sand-lo: #4a4038;
   --toggle-bg:    #2e2318;
   --toggle-border:#4a3828;
   --toggle-knob:  #d4a96a;
@@ -61,7 +63,9 @@ html.light {
   --live-bg:      #eaf3de;
   --live-fg:      #3b6d11;
   --live-dot:     #63c521;
-  --text-warm:    #a08060;
+  --text-warm:    #b8a898;
+  --text-sand:    #9a8878;
+  --text-sand-lo: #7a6858;
   --toggle-bg:    #e8d5b0;
   --toggle-border:#c8a870;
   --toggle-knob:  #7a4a18;
@@ -74,7 +78,7 @@ html.light {
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
@@ -101,14 +105,15 @@ body {
   font-size: 36px;
   font-weight: 500;
   letter-spacing: 0.5px;
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow Semi Condensed', sans-serif;
 }
 .subtitle {
   font-size: 12px;
-  color: var(--text-muted);
+  color: var(--text-warm);
   margin-top: 4px;
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-weight: 400;
+  letter-spacing: 0.04em;
 }
 .header-right {
   display: flex;
@@ -123,7 +128,7 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: 400;
   border-radius: 99px;
   padding: 4px 12px;
@@ -210,24 +215,26 @@ html.light .card {
 .card-bl { bottom: 16px; left: 0; }
 .card-br { bottom: 16px; right: 0; }
 
-.card-icon  { font-size: 24px; line-height: 1; margin-bottom: 8px; }
-.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--text-warm); font-family: 'Google Sans Mono', monospace; font-weight: 400; }
-.card-value { font-size: 36px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.1; margin: 4px 0 0; font-family: 'Google Sans Mono', monospace; }
-.card-value em { font-size: 16px; font-weight: 400; color: var(--text-warm); font-style: normal; font-family: 'Google Sans Mono', monospace; }
+.card-icon  { font-size: 30px; line-height: 1; margin-bottom: 10px; }
+.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--text-sand); font-family: 'Barlow', sans-serif; font-weight: 400; }
+.card-value { font-size: 36px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.1; margin: 4px 0 0; font-family: 'Barlow Semi Condensed', sans-serif; }
+.card-value em { font-size: 16px; font-weight: 400; color: var(--text-sand); font-style: normal; font-family: 'Barlow', sans-serif; letter-spacing: 0.04em; }
 .card-row {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
   color: var(--text-warm);
   margin-top: 8px;
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-weight: 400;
+  letter-spacing: 0.02em;
 }
 .card-row b {
   font-weight: 500;
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-size: 13px;
   color: var(--text);
+  letter-spacing: 0.02em;
 }
 
 /* house */
@@ -258,20 +265,25 @@ html.light .card {
 .section-label {
   font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: .1em;
-  color: var(--text-warm);
-  font-family: 'Google Sans Mono', monospace;
+  letter-spacing: .12em;
+  color: var(--text-sand);
+  font-family: 'Barlow', sans-serif;
   font-weight: 400;
   margin-bottom: 10px;
 }
 
 /* ── System status ─────────────────────────────────────────── */
 .sys-card {
-  background: var(--bg-card);
+  background: rgba(255, 255, 255, 0.08);
   border: 0.5px solid var(--border);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 18px 20px;
   transition: background .3s, border-color .3s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+html.light .sys-card {
+  background: rgba(255, 255, 255, 0.7);
 }
 .sys-grid {
   display: grid;
@@ -293,22 +305,25 @@ html.light .card {
   font-size: 13px;
 }
 .sys-row:last-child { border-bottom: none; }
-.sys-key { color: var(--text-warm); font-family: 'Google Sans Mono', monospace; font-weight: 400; }
+.sys-key { color: var(--text-warm); font-family: 'Barlow', sans-serif; font-weight: 400; letter-spacing: 0.03em; }
+.sys-key.priority { color: var(--live-fg); font-weight: 500; letter-spacing: 0.03em; }
 .sys-val {
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
   text-align: right;
+  letter-spacing: 0.02em;
 }
 
 /* badges */
 .badge {
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 99px;
   font-weight: 500;
+  letter-spacing: 0.04em;
 }
 .badge-ok   { background: var(--badge-ok-bg);   color: var(--badge-ok-fg); }
 .badge-warn { background: var(--badge-warn-bg);  color: var(--badge-warn-fg); }
@@ -318,28 +333,35 @@ html.light .badge-info { background: #e6f1fb; color: #185fa5; }
 
 /* ── Monthly history ───────────────────────────────────────── */
 .month-card {
-  background: var(--bg-card);
+  background: rgba(255, 255, 255, 0.08);
   border: 0.5px solid var(--border);
-  border-radius: 14px;
-  padding: 16px 18px;
+  border-radius: 16px;
+  padding: 16px 20px;
   margin-bottom: 9px;
   transition: background .3s, border-color .3s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
-.month-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; font-family: 'Google Sans Mono', monospace; }
+html.light .month-card {
+  background: rgba(255, 255, 255, 0.7);
+}
+.month-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; font-family: 'Barlow Semi Condensed', sans-serif; letter-spacing: 0.3px; }
 .month-row {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
   color: var(--text-warm);
   padding: 3px 0;
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-weight: 400;
+  letter-spacing: 0.02em;
 }
 .month-row b {
   font-weight: 500;
-  font-family: 'Google Sans Mono', monospace;
+  font-family: 'Barlow', sans-serif;
   font-size: 13px;
   color: var(--text);
+  letter-spacing: 0.02em;
 }
 .month-row b.pos { color: var(--cost-pos); }
 .month-row b.neg { color: var(--cost-neg); }
@@ -397,7 +419,7 @@ html.light .badge-info { background: #e6f1fb; color: #185fa5; }
   padding: 10px 14px;
   font-size: 14px;
   color: var(--text);
-  font-family: 'Google Sans', sans-serif;
+  font-family: 'Barlow', sans-serif;
   transition: border-color .2s;
 }
 .login-form input:focus {
@@ -415,7 +437,7 @@ html.light .badge-info { background: #e6f1fb; color: #185fa5; }
 .login-error { font-size: 12px; color: #f87171; text-align: center; min-height: 1.2em; display: none; }
 .login-error.visible { display: block; }
 
-.btn { cursor: pointer; border: none; font-family: 'Google Sans', sans-serif; font-size: 14px; transition: all .2s; }
+.btn { cursor: pointer; border: none; font-family: 'Barlow', sans-serif; font-size: 14px; transition: all .2s; }
 .btn-primary {
   background: #2563eb; color: #fff;
   border-radius: 10px; padding: 10px 0;
