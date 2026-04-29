@@ -9,13 +9,13 @@ import { getDatabase, ref, onValue }   from 'https://www.gstatic.com/firebasejs/
 
 /* ── Firebase config ─────────────────────────────────────── */
 const firebaseConfig = {
-    apiKey: "AIzaSyBhjBzQPlaGYicVXw015qoQRMkSQXyOMfU",
-    authDomain: "homedashboard-5b2e0.firebaseapp.com",
-    databaseURL: "https://homedashboard-5b2e0-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "homedashboard-5b2e0",
-    storageBucket: "homedashboard-5b2e0.firebasestorage.app",
-    messagingSenderId: "707757582553",
-    appId: "1:707757582553:web:03c672dcb6125afc87b6c8",
+  apiKey:            'YOUR_API_KEY',
+  authDomain:        'YOUR_PROJECT.firebaseapp.com',
+  projectId:         'YOUR_PROJECT',
+  storageBucket:     'YOUR_PROJECT.firebasestorage.app',
+  messagingSenderId: 'YOUR_SENDER_ID',
+  appId:             'YOUR_APP_ID',
+  databaseURL:       'https://YOUR_PROJECT-default-rtdb.europe-west1.firebasedatabase.app',
 };
 
 const app  = initializeApp(firebaseConfig);
@@ -94,8 +94,15 @@ function resetStaleTimer() {
 
 /* ── App start ───────────────────────────────────────────── */
 function startApp() {
-  subscribeLive();
-  subscribeDaily();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      subscribeLive();
+      subscribeDaily();
+    });
+  } else {
+    subscribeLive();
+    subscribeDaily();
+  }
 }
 
 /* ── Live data ───────────────────────────────────────────── */
