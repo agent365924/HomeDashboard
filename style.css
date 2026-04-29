@@ -97,9 +97,9 @@ body {
   justify-content: space-between;
 }
 .title {
-  font-size: 24px;
+  font-size: 36px;
   font-weight: 500;
-  letter-spacing: -0.5px;
+  letter-spacing: 0.5px;
   font-family: 'DM Mono', monospace;
 }
 .subtitle {
@@ -282,15 +282,15 @@ html.light .card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 7px 0;
+  padding: 8px 0;
   border-bottom: 0.5px solid var(--border-sub);
-  font-size: 12px;
+  font-size: 14px;
 }
 .sys-row:last-child { border-bottom: none; }
 .sys-key { color: var(--text-muted); font-family: 'DM Sans', sans-serif; }
 .sys-val {
   font-family: 'DM Mono', monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text);
   text-align: right;
 }
@@ -316,19 +316,19 @@ html.light .card {
   margin-bottom: 9px;
   transition: background .3s, border-color .3s;
 }
-.month-title { font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+.month-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; font-family: 'DM Mono', monospace; }
 .month-row {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-muted);
-  padding: 2px 0;
+  padding: 3px 0;
   font-family: 'DM Mono', monospace;
 }
 .month-row b {
   font-weight: 400;
   font-family: 'DM Mono', monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text);
 }
 .month-row b.pos { color: var(--cost-pos); }
@@ -416,13 +416,32 @@ html.light .card {
 
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 600px) {
-  .app { padding: 0 16px 48px; }
-  .scene { height: 420px; }
-  .house { width: 280px; height: 280px; }
-  .card { min-width: 140px; padding: 10px 12px; }
-  .card-value { font-size: 20px; }
-  .card-br { width: 160px; }
+  .app { padding: 0 12px 48px; }
+  .scene { height: 400px; }
+  .house { width: 260px; height: 260px; }
+
+  /* cards scale to ~44% of viewport so two fit side by side */
+  .card {
+    width: 44vw;
+    min-width: 0;
+    padding: 10px 12px;
+  }
+  .card-icon  { font-size: 18px; margin-bottom: 5px; }
+  .card-label { font-size: 10px; }
+  .card-value { font-size: 22px; letter-spacing: 0.2px; }
+  .card-value em { font-size: 12px; }
+  .card-row   { font-size: 11px; margin-top: 5px; }
+  .card-row b { font-size: 11px; }
+
   .sys-grid { grid-template-columns: 1fr; }
-  .sys-col:first-child { border-right: none; border-bottom: 0.5px solid var(--border); padding-right: 0; padding-bottom: 8px; margin-bottom: 8px; }
+  .sys-col:first-child {
+    border-right: none;
+    border-bottom: 0.5px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
   .sys-col:last-child { padding-left: 0; }
+
+  .title { font-size: 24px; }
 }
