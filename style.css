@@ -234,13 +234,7 @@ html.light .status-error { background: #fee2e2; color: #b91c1c; }
   transition: opacity .4s;
 }
 .house-tint {
-  position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, rgba(10,20,50,.55) 0%, rgba(5,10,30,.75) 100%);
-  border-radius: 8px;
-  opacity: var(--tint-opacity);
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  transition: opacity .4s;
+  display: none;
 }
 
 /* cost color helpers */
