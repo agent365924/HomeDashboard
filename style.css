@@ -502,7 +502,7 @@ html.light .month-card {
 @media (max-width: 600px) {
   .app { padding: 0 12px 48px; }
   .scene { height: 400px; }
-  .house { width: 260px; height: 260px; }
+  .house { width: 290px; height: 290px; }
 
   /* cards scale to ~44% of viewport so two fit side by side */
   .card {
