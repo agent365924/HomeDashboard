@@ -62,18 +62,19 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('theme-toggle').addEventListener('click', () => {
     const isLight = document.documentElement.classList.toggle('light');
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
+    updateHouseImage();
   });
 });
 
-/* ── House day/night swap ────────────────────────────────── */
+/* ── House theme-based image swap ────────────────────────── */
+const HOUSE_DAY   = 'https://raw.githubusercontent.com/agent365924/HomeDashboard/b0b5655a8d8a950e6f0d99c49ad9f3599e26f4f0/house_day.png';
+const HOUSE_NIGHT = 'https://raw.githubusercontent.com/agent365924/HomeDashboard/1679d48f1a24f6805e6035273b3c2d107453f451/house_night.png';
+
 function updateHouseImage() {
   const img = document.getElementById('house-img');
   if (!img) return;
-  const h = new Date().getHours();
-  const isDay = h >= 7 && h < 20;
-  img.src = isDay
-    ? 'https://raw.githubusercontent.com/agent365924/HomeDashboard/b0b5655a8d8a950e6f0d99c49ad9f3599e26f4f0/house_day.png'
-    : 'https://raw.githubusercontent.com/agent365924/HomeDashboard/1679d48f1a24f6805e6035273b3c2d107453f451/house_night.png';
+  const isLight = document.documentElement.classList.contains('light');
+  img.src = isLight ? HOUSE_DAY : HOUSE_NIGHT;
 }
 
 /* ── Auth ────────────────────────────────────────────────── */
@@ -139,8 +140,6 @@ function startApp() {
 
 function init() {
   updateHouseImage();
-  // refresh house image every hour
-  setInterval(updateHouseImage, 3600000);
   subscribeLive();
   subscribeSensors();
   subscribeNetwork();
