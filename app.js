@@ -7,33 +7,7 @@ import { getAuth, signInWithEmailAndPassword,
          onAuthStateChanged }          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getDatabase, ref, onValue }   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-/* ── Weather code map (WMO) ──────────────────────────────── */
-const WX = {
-  0:  { label: 'Clear sky',       icon: '☀️' },
-  1:  { label: 'Mainly clear',    icon: '🌤️' },
-  2:  { label: 'Partly cloudy',   icon: '⛅' },
-  3:  { label: 'Overcast',        icon: '☁️' },
-  45: { label: 'Foggy',           icon: '🌫️' },
-  48: { label: 'Icy fog',         icon: '🌫️' },
-  51: { label: 'Light drizzle',   icon: '🌦️' },
-  53: { label: 'Drizzle',         icon: '🌦️' },
-  55: { label: 'Heavy drizzle',   icon: '🌧️' },
-  61: { label: 'Light rain',      icon: '🌧️' },
-  63: { label: 'Rain',            icon: '🌧️' },
-  65: { label: 'Heavy rain',      icon: '🌧️' },
-  71: { label: 'Light snow',      icon: '🌨️' },
-  73: { label: 'Snow',            icon: '❄️' },
-  75: { label: 'Heavy snow',      icon: '❄️' },
-  77: { label: 'Snow grains',     icon: '🌨️' },
-  80: { label: 'Rain showers',    icon: '🌦️' },
-  81: { label: 'Showers',         icon: '🌧️' },
-  82: { label: 'Heavy showers',   icon: '⛈️' },
-  85: { label: 'Snow showers',    icon: '🌨️' },
-  86: { label: 'Heavy snow showers', icon: '❄️' },
-  95: { label: 'Thunderstorm',    icon: '⛈️' },
-  96: { label: 'Thunderstorm',    icon: '⛈️' },
-  99: { label: 'Thunderstorm',    icon: '⛈️' },
-};
+/* ── Firebase config ─────────────────────────────────────── */
 const firebaseConfig = {
   apiKey:            'AIzaSyBhjBzQPlaGYicVXw015qoQRMkSQXyOMfU',
   authDomain:        'homedashboard-5b2e0.firebaseapp.com',
@@ -48,13 +22,40 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getDatabase(app);
 
+/* ── Weather code map (WMO) ──────────────────────────────── */
+const WX = {
+  0:  { label: 'Clear sky',          icon: '☀️' },
+  1:  { label: 'Mainly clear',       icon: '🌤️' },
+  2:  { label: 'Partly cloudy',      icon: '⛅' },
+  3:  { label: 'Overcast',           icon: '☁️' },
+  45: { label: 'Foggy',              icon: '🌫️' },
+  48: { label: 'Icy fog',            icon: '🌫️' },
+  51: { label: 'Light drizzle',      icon: '🌦️' },
+  53: { label: 'Drizzle',            icon: '🌦️' },
+  55: { label: 'Heavy drizzle',      icon: '🌧️' },
+  61: { label: 'Light rain',         icon: '🌧️' },
+  63: { label: 'Rain',               icon: '🌧️' },
+  65: { label: 'Heavy rain',         icon: '🌧️' },
+  71: { label: 'Light snow',         icon: '🌨️' },
+  73: { label: 'Snow',               icon: '❄️' },
+  75: { label: 'Heavy snow',         icon: '❄️' },
+  77: { label: 'Snow grains',        icon: '🌨️' },
+  80: { label: 'Rain showers',       icon: '🌦️' },
+  81: { label: 'Showers',            icon: '🌧️' },
+  82: { label: 'Heavy showers',      icon: '⛈️' },
+  85: { label: 'Snow showers',       icon: '🌨️' },
+  86: { label: 'Heavy snow showers', icon: '❄️' },
+  95: { label: 'Thunderstorm',       icon: '⛈️' },
+  96: { label: 'Thunderstorm',       icon: '⛈️' },
+  99: { label: 'Thunderstorm',       icon: '⛈️' },
+};
+
 /* ── Theme ───────────────────────────────────────────────── */
 const THEME_KEY = 'hd_theme';
 
 function applyTheme(light) {
   document.documentElement.classList.toggle('light', light);
 }
-
 applyTheme(localStorage.getItem(THEME_KEY) === 'light');
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -63,6 +64,17 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
   });
 });
+
+/* ── House day/night swap ────────────────────────────────── */
+function updateHouseImage() {
+  const img = document.getElementById('house-img');
+  if (!img) return;
+  const h = new Date().getHours();
+  const isDay = h >= 7 && h < 20;
+  img.src = isDay
+    ? 'https://raw.githubusercontent.com/agent365924/HomeDashboard/1679d48f1a24f6805e6035273b3c2d107453f451/house_day.png'
+    : 'https://raw.githubusercontent.com/agent365924/HomeDashboard/1679d48f1a24f6805e6035273b3c2d107453f451/house_night.png';
+}
 
 /* ── Auth ────────────────────────────────────────────────── */
 onAuthStateChanged(auth, (user) => {
@@ -83,11 +95,9 @@ async function doLogin() {
   const password = document.getElementById('password-input').value;
   const errorEl  = document.getElementById('login-error');
   const btn      = document.getElementById('login-btn');
-
   errorEl.classList.remove('visible');
   btn.disabled    = true;
   btn.textContent = '…';
-
   try {
     await signInWithEmailAndPassword(auth, email, password);
   } catch {
@@ -121,14 +131,20 @@ function resetStaleTimer() {
 /* ── App start ───────────────────────────────────────────── */
 function startApp() {
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      subscribeLive();
-      subscribeDaily();
-    });
+    document.addEventListener('DOMContentLoaded', () => init());
   } else {
-    subscribeLive();
-    subscribeDaily();
+    init();
   }
+}
+
+function init() {
+  updateHouseImage();
+  // refresh house image every hour
+  setInterval(updateHouseImage, 3600000);
+  subscribeLive();
+  subscribeSensors();
+  subscribeNetwork();
+  subscribeTotals();
 }
 
 /* ── Live data ───────────────────────────────────────────── */
@@ -146,9 +162,9 @@ function subscribeLive() {
 }
 
 function renderLive(d) {
-  /* generation */
+  /* generation — real-time kW */
+  set('gen-kw', fmt(d.generation_kw, 2));
   set('gen-autonomy', d.rel_self_consumption != null ? fmt(d.rel_self_consumption, 1) + ' %' : '— %');
-  set('gen-day', d.e_day_kwh != null ? fmt(d.e_day_kwh, 2) : '0,00');
 
   /* weather */
   set('wx-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) + '°' : '—°');
@@ -160,24 +176,14 @@ function renderLive(d) {
   /* battery */
   set('bat-soc', fmt(d.battery_soc, 1));
   set('bat-kw',  fmt(Math.abs(d.battery_kw), 2) + ' kW');
-  set('bat-mode-label', d.battery_kw >= 0 ? 'Charging' : 'Discharging');
 
-  /* grid / consumption */
-  set('grid-main',   fmt(d.consumption_kw, 2));
-  set('grid-import', fmt(d.grid_import_kw, 2) + ' kW');
-  set('grid-export', fmt(d.grid_export_kw, 2) + ' kW');
-
-  /* connector line color */
-  const lineGrid = document.getElementById('line-grid');
-  if (lineGrid) lineGrid.className.baseVal = 'line ' + (d.grid_export_kw > 0 ? 'line-export' : 'line-import');
-
-  /* cost — fetched from config node; placeholder calc here */
-  const costEl = document.getElementById('cost-val');
-  if (costEl && d.grid_import_kw != null) {
-    /* cost is computed in daily aggregation; show placeholder until daily loads */
-    costEl.textContent = '—';
-    costEl.className   = 'cost-neutral';
-  }
+  /* grid card — consumption as main, net grid as sub */
+  set('grid-main', fmt(d.consumption_kw, 2));
+  const netGrid = d.grid_import_kw - d.grid_export_kw;
+  const netStr  = netGrid < 0
+    ? '−' + fmt(Math.abs(netGrid), 2) + ' kW'
+    : fmt(netGrid, 2) + ' kW';
+  set('grid-net', netStr);
 
   /* system status panel */
   setBadge('sys-bat-mode',    d.battery_mode,
@@ -192,74 +198,100 @@ function renderLive(d) {
   set('sys-e-total',  d.e_total_kwh != null
     ? (d.e_total_kwh / 1000000).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' MWh'
     : '—');
-  set('sys-autonomy', d.rel_autonomy       != null ? fmt(d.rel_autonomy, 1) + ' %' : '—');
+  set('sys-autonomy', d.rel_autonomy         != null ? fmt(d.rel_autonomy, 1) + ' %' : '—');
   set('sys-self',     d.rel_self_consumption != null ? fmt(d.rel_self_consumption, 1) + ' %' : '—');
 }
 
-/* ── Daily / history data ────────────────────────────────── */
-function subscribeDaily() {
-  onValue(ref(db, '/daily'), (snap) => {
-    const data = snap.val();
-    if (!data) return;
-    renderHistory(data);
-    renderTodayCost(data);
+/* ── Sensors ─────────────────────────────────────────────── */
+function subscribeSensors() {
+  onValue(ref(db, '/sensors/thermo_hygrometer'), (snap) => {
+    const d = snap.val();
+    if (!d) return;
+    set('info-temp', d.temperature != null ? fmt(d.temperature, 1) + '°' : '—°');
+    set('info-hum',  d.humidity    != null ? fmt(d.humidity, 0) + ' %' : '— %');
   });
 }
 
-function renderHistory(data) {
-  /* Group days by month, newest first */
-  const byMonth = {};
-  Object.entries(data)
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .forEach(([date, vals]) => {
-      const [y, m] = date.split('-');
-      const key    = y + '-' + m;
-      if (!byMonth[key]) byMonth[key] = { y, m, days: [] };
-      byMonth[key].days.push({ date, ...vals });
-    });
+/* ── Network ─────────────────────────────────────────────── */
+function subscribeNetwork() {
+  onValue(ref(db, '/network'), (snap) => {
+    const d = snap.val();
+    if (!d) return;
+    set('info-dl',   d.download_mbps != null ? fmt(d.download_mbps, 0) : '—');
+    set('info-ul',   d.upload_mbps   != null ? fmt(d.upload_mbps,   0) : '—');
+    set('info-ping', d.ping_ms       != null ? fmt(d.ping_ms,       0) : '—');
+  });
+}
+
+/* ── Totals ──────────────────────────────────────────────── */
+function subscribeTotals() {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // today's running totals
+  onValue(ref(db, `/totals/daily/${today}`), (snap) => {
+    const d = snap.val();
+    if (!d) return;
+    set('today-gen',  fmt(d.generation_kwh,  1) + ' kWh');
+    set('today-cons', fmt(d.consumption_kwh, 1) + ' kWh');
+    set('today-imp',  fmt(d.grid_import_kwh, 2) + ' kWh');
+    set('today-exp',  fmt(d.grid_export_kwh, 2) + ' kWh');
+    const costEl = document.getElementById('today-cost');
+    if (costEl && d.cost_eur != null) {
+      const v = d.cost_eur;
+      costEl.textContent = (v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' €';
+      costEl.className   = 'sys-val ' + (v <= 0 ? 'cost-pos' : 'cost-neg');
+    }
+  });
+
+  // monthly history — combine /totals/monthly + current month from /totals/daily
+  onValue(ref(db, '/totals/monthly'), (snap) => {
+    const monthly = snap.val() || {};
+    onValue(ref(db, '/totals/daily'), (snapD) => {
+      const daily = snapD.val() || {};
+      renderHistory(monthly, daily);
+    }, { onlyOnce: true });
+  });
+}
+
+function renderHistory(monthly, daily) {
+  // aggregate daily entries by month for current month
+  const byMonth = { ...monthly };
+
+  Object.entries(daily).forEach(([date, vals]) => {
+    const key = date.slice(0, 7); // YYYY-MM
+    if (!byMonth[key]) {
+      byMonth[key] = { generation_kwh: 0, consumption_kwh: 0,
+                       grid_import_kwh: 0, grid_export_kwh: 0, cost_eur: 0 };
+    }
+    byMonth[key].generation_kwh  = (byMonth[key].generation_kwh  || 0) + (vals.generation_kwh  || 0);
+    byMonth[key].consumption_kwh = (byMonth[key].consumption_kwh || 0) + (vals.consumption_kwh || 0);
+    byMonth[key].grid_import_kwh = (byMonth[key].grid_import_kwh || 0) + (vals.grid_import_kwh || 0);
+    byMonth[key].grid_export_kwh = (byMonth[key].grid_export_kwh || 0) + (vals.grid_export_kwh || 0);
+    byMonth[key].cost_eur        = (byMonth[key].cost_eur        || 0) + (vals.cost_eur        || 0);
+  });
 
   const list = document.getElementById('history-list');
   list.innerHTML = '';
 
-  Object.entries(byMonth).forEach(([, month]) => {
-    const totals = month.days.reduce((acc, d) => {
-      acc.gen  += d.generation_kwh  || 0;
-      acc.cons += d.consumption_kwh || 0;
-      acc.imp  += d.grid_import_kwh || 0;
-      acc.exp  += d.grid_export_kwh || 0;
-      acc.cost += d.cost_eur        || 0;
-      return acc;
-    }, { gen: 0, cons: 0, imp: 0, exp: 0, cost: 0 });
-
-    const monthName = new Date(+month.y, +month.m - 1, 1)
-      .toLocaleString('en-US', { month: 'long', year: 'numeric' });
-
-    const costClass = totals.cost <= 0 ? 'pos' : 'neg';
-
-    const card = document.createElement('div');
-    card.className = 'month-card';
-    card.innerHTML = `
-      <div class="month-title">${monthName}</div>
-      <div class="month-row"><span>Consumption</span><b>${fmt(totals.cons, 1)} kWh</b></div>
-      <div class="month-row"><span>Generation</span><b>${fmt(totals.gen, 1)} kWh</b></div>
-      <div class="month-row"><span>From Grid</span><b>${fmt(totals.imp, 1)} kWh</b></div>
-      <div class="month-row"><span>To Grid</span><b>${fmt(totals.exp, 1)} kWh</b></div>
-      <div class="month-row"><span>Energy costs</span><b class="${costClass}">${fmt(totals.cost, 2)} €</b></div>
-    `;
-    list.appendChild(card);
-  });
-}
-
-function renderTodayCost(data) {
-  const today = new Date().toISOString().slice(0, 10);
-  const d     = data[today];
-  const costEl = document.getElementById('cost-val');
-  if (!costEl) return;
-  if (d && d.cost_eur != null) {
-    const v = d.cost_eur;
-    costEl.textContent = (v >= 0 ? '' : '−') + fmt(Math.abs(v), 2) + ' €';
-    costEl.className   = v <= 0 ? 'cost-pos' : 'cost-neg';
-  }
+  Object.entries(byMonth)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .forEach(([key, t]) => {
+      const [y, m]     = key.split('-');
+      const monthName  = new Date(+y, +m - 1, 1)
+        .toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+      const costClass  = (t.cost_eur || 0) <= 0 ? 'cost-pos' : 'cost-neg';
+      const card       = document.createElement('div');
+      card.className   = 'month-card';
+      card.innerHTML   = `
+        <div class="month-title">${monthName}</div>
+        <div class="month-row"><span>Total Generation</span><b>${fmt(t.generation_kwh,  1)} kWh</b></div>
+        <div class="month-row"><span>Total Consumption</span><b>${fmt(t.consumption_kwh, 1)} kWh</b></div>
+        <div class="month-row"><span>From Grid</span><b>${fmt(t.grid_import_kwh, 1)} kWh</b></div>
+        <div class="month-row"><span>To Grid</span><b>${fmt(t.grid_export_kwh,  1)} kWh</b></div>
+        <div class="month-row"><span>Energy Cost</span><b class="${costClass}">${fmt(Math.abs(t.cost_eur || 0), 2)} €</b></div>
+      `;
+      list.appendChild(card);
+    });
 }
 
 /* ── Utilities ───────────────────────────────────────────── */
