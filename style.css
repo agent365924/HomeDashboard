@@ -257,6 +257,7 @@ html.light .card {
   justify-content: space-between;
   gap: 8px;
   padding: 8px 4px;
+  margin-top: -10px;
 }
 .info-item {
   display: flex;
