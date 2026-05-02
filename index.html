@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Home Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Semi+Condensed:wght@400;500&display=swap" rel="stylesheet">
@@ -15,7 +16,7 @@
 <div class="login-overlay" id="login-overlay">
   <div class="login-card">
     <div class="login-header">
-      <div class="login-icon">⚡</div>
+      <div class="login-icon">🏠</div>
       <h2 class="login-title">Home Dashboard</h2>
       <p class="login-subtitle">Sign in to continue</p>
     </div>
@@ -58,22 +59,10 @@
   <!-- Hero scene -->
   <div class="scene">
 
-    <!-- Connector lines -->
-    <svg class="connectors" viewBox="0 0 760 360" preserveAspectRatio="none">
-      <!-- generation → house -->
-      <line class="line line-solar" x1="172" y1="80"  x2="295" y2="155"/>
-      <!-- weather → house -->
-      <line class="line line-neutral" x1="588" y1="80"  x2="465" y2="155"/>
-      <!-- battery → house -->
-      <line class="line line-battery" id="line-battery" x1="172" y1="285" x2="295" y2="215"/>
-      <!-- grid → house -->
-      <line class="line line-grid" id="line-grid" x1="588" y1="285" x2="465" y2="215"/>
-    </svg>
-
     <!-- Generation card -->
     <div class="card card-tl">
       <div class="card-icon">⚡</div>
-      <div class="card-value"><span id="gen-day">—</span> <em>kWh</em></div>
+      <div class="card-value"><span id="gen-kw">—</span> <em>kW</em></div>
       <div class="card-row"><span>Autonomy</span><b id="gen-autonomy">— %</b></div>
     </div>
 
@@ -86,27 +75,58 @@
 
     <!-- House image -->
     <div class="house">
-      <div class="house-wrap">
-        <img src="home_render.png" alt="House" id="house-img">
-        <div class="house-tint" id="house-tint"></div>
-      </div>
+      <img src="house_day.png" alt="House" id="house-img">
     </div>
 
     <!-- Battery card -->
     <div class="card card-bl">
       <div class="card-icon">🔋</div>
-      <div class="card-value"><span id="bat-soc">—</span><em>%</em></div>
-      <div class="card-row"><span>Power</span><b id="bat-kw">— kWh</b></div>
+      <div class="card-value"><span id="bat-soc">—</span> <em>%</em></div>
+      <div class="card-row"><span>Power</span><b id="bat-kw">— kW</b></div>
     </div>
 
     <!-- Grid card -->
     <div class="card card-br">
-      <div class="card-icon" id="grid-icon">🔌</div>
+      <div class="card-icon">🔌</div>
       <div class="card-value"><span id="grid-main">—</span> <em>kW</em></div>
-      <div class="card-row"><span>Import</span><b id="grid-import">— kW</b></div>
-      <div class="card-row"><span>Export</span><b id="grid-export">— kW</b></div>
+      <div class="card-row"><span>Grid</span><b id="grid-net">— kW</b></div>
     </div>
 
+  </div>
+
+  <!-- Info bar: sensors + network -->
+  <div class="section">
+    <div class="info-bar">
+      <div class="info-item">
+        <span class="info-icon">🌡️</span>
+        <span class="info-val" id="info-temp">—°</span>
+        <span class="info-unit">inside</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item">
+        <span class="info-icon">💧</span>
+        <span class="info-val" id="info-hum">— %</span>
+        <span class="info-unit">humidity</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item">
+        <span class="info-icon">⬇️</span>
+        <span class="info-val" id="info-dl">—</span>
+        <span class="info-unit">Mbps</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item">
+        <span class="info-icon">⬆️</span>
+        <span class="info-val" id="info-ul">—</span>
+        <span class="info-unit">Mbps</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item">
+        <span class="info-icon">📡</span>
+        <span class="info-val" id="info-ping">—</span>
+        <span class="info-unit">ms</span>
+      </div>
+    </div>
   </div>
 
   <!-- System status -->
@@ -152,6 +172,39 @@
           <div class="sys-row">
             <span class="sys-key">Self-consumption</span>
             <span class="sys-val" id="sys-self">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily totals -->
+  <div class="section">
+    <div class="section-label">Today</div>
+    <div class="sys-card">
+      <div class="sys-grid">
+        <div class="sys-col">
+          <div class="sys-row">
+            <span class="sys-key">Generation</span>
+            <span class="sys-val" id="today-gen">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Consumption</span>
+            <span class="sys-val" id="today-cons">—</span>
+          </div>
+        </div>
+        <div class="sys-col">
+          <div class="sys-row">
+            <span class="sys-key">Grid import</span>
+            <span class="sys-val" id="today-imp">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Grid export</span>
+            <span class="sys-val" id="today-exp">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Energy costs</span>
+            <span class="sys-val" id="today-cost">—</span>
           </div>
         </div>
       </div>
