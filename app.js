@@ -72,7 +72,7 @@ function updateHouseImage() {
   const h = new Date().getHours();
   const isDay = h >= 7 && h < 20;
   img.src = isDay
-    ? 'https://raw.githubusercontent.com/agent365924/HomeDashboard/1679d48f1a24f6805e6035273b3c2d107453f451/house_day.png'
+    ? 'https://raw.githubusercontent.com/agent365924/HomeDashboard/b0b5655a8d8a950e6f0d99c49ad9f3599e26f4f0/house_day.png'
     : 'https://raw.githubusercontent.com/agent365924/HomeDashboard/1679d48f1a24f6805e6035273b3c2d107453f451/house_night.png';
 }
 
