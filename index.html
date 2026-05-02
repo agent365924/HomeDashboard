@@ -63,7 +63,7 @@
     <div class="card card-tl">
       <div class="card-icon">⚡</div>
       <div class="card-value"><span id="gen-kw">—</span> <em>kW</em></div>
-      <div class="card-row"><span>Autonomy</span><b id="gen-autonomy">— %</b></div>
+      <div class="card-row"><span>Self-consumption</span><b id="gen-autonomy">— %</b></div>
     </div>
 
     <!-- Weather card -->
@@ -98,33 +98,74 @@
   <div class="section">
     <div class="info-bar">
       <div class="info-item">
-        <span class="info-icon">🌡️</span>
+        <span class="info-label">Temperature</span>
         <span class="info-val" id="info-temp">—°</span>
-        <span class="info-unit">inside</span>
       </div>
       <div class="info-divider"></div>
       <div class="info-item">
-        <span class="info-icon">💧</span>
-        <span class="info-val" id="info-hum">— %</span>
-        <span class="info-unit">humidity</span>
+        <span class="info-label">Humidity</span>
+        <span class="info-val" id="info-hum">—%</span>
       </div>
-      <div class="info-divider"></div>
+      <div class="info-pipe"></div>
       <div class="info-item">
-        <span class="info-icon">⬇️</span>
+        <span class="info-label">↓</span>
         <span class="info-val" id="info-dl">—</span>
         <span class="info-unit">Mbps</span>
       </div>
       <div class="info-divider"></div>
       <div class="info-item">
-        <span class="info-icon">⬆️</span>
+        <span class="info-label">↑</span>
         <span class="info-val" id="info-ul">—</span>
         <span class="info-unit">Mbps</span>
       </div>
       <div class="info-divider"></div>
       <div class="info-item">
-        <span class="info-icon">📡</span>
+        <span class="info-label">Ping</span>
         <span class="info-val" id="info-ping">—</span>
         <span class="info-unit">ms</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily totals -->
+  <div class="section">
+    <div class="section-label">Today</div>
+    <div class="sys-card">
+      <div class="sys-grid">
+        <div class="sys-col">
+          <div class="sys-row">
+            <span class="sys-key">Generation</span>
+            <span class="sys-val" id="today-gen">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Consumption</span>
+            <span class="sys-val" id="today-cons">—</span>
+          </div>
+        </div>
+        <div class="sys-col">
+          <div class="sys-row">
+            <span class="sys-key">Grid import</span>
+            <span class="sys-val" id="today-imp">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Grid export</span>
+            <span class="sys-val" id="today-exp">—</span>
+          </div>
+          <div class="sys-row">
+            <span class="sys-key">Energy costs</span>
+            <span class="sys-val" id="today-cost">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly overview -->
+  <div class="section">
+    <div class="section-label">Monthly overview</div>
+    <div id="history-list">
+      <div class="month-card">
+        <div class="month-skeleton"></div>
       </div>
     </div>
   </div>
@@ -174,49 +215,6 @@
             <span class="sys-val" id="sys-self">—</span>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Daily totals -->
-  <div class="section">
-    <div class="section-label">Today</div>
-    <div class="sys-card">
-      <div class="sys-grid">
-        <div class="sys-col">
-          <div class="sys-row">
-            <span class="sys-key">Generation</span>
-            <span class="sys-val" id="today-gen">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Consumption</span>
-            <span class="sys-val" id="today-cons">—</span>
-          </div>
-        </div>
-        <div class="sys-col">
-          <div class="sys-row">
-            <span class="sys-key">Grid import</span>
-            <span class="sys-val" id="today-imp">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Grid export</span>
-            <span class="sys-val" id="today-exp">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Energy costs</span>
-            <span class="sys-val" id="today-cost">—</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Monthly overview -->
-  <div class="section">
-    <div class="section-label">Monthly overview</div>
-    <div id="history-list">
-      <div class="month-card">
-        <div class="month-skeleton"></div>
       </div>
     </div>
   </div>
