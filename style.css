@@ -303,6 +303,8 @@ html.light .card {
   flex-shrink: 0;
   margin: 0 4px;
 }
+/* network items slightly tighter */
+.info-item-net { flex: 0.7; }
 
 /* cost color helpers */
 .cost-pos { color: var(--cost-pos) !important; }
@@ -396,17 +398,20 @@ html.light .badge-info { background: #e0e8f0; color: #507090; }
 html.light .month-card {
   background: rgba(255, 255, 255, 0.7);
 }
-.month-title { font-size: 16px; font-weight: 500; margin-bottom: 10px; font-family: 'Barlow Semi Condensed', sans-serif; letter-spacing: 0.3px; }
+.month-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; font-family: 'Barlow Semi Condensed', sans-serif; letter-spacing: 0.3px; }
 .month-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-size: 13px;
   color: var(--text-warm);
-  padding: 3px 0;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--border-sub);
   font-family: 'Barlow', sans-serif;
   font-weight: 400;
   letter-spacing: 0.02em;
 }
+.month-row:last-child { border-bottom: none; }
 .month-row b {
   font-weight: 500;
   font-family: 'Barlow', sans-serif;
@@ -528,4 +533,21 @@ html.light .month-card {
   .sys-col:last-child { padding-left: 0; }
 
   .title { font-size: 24px; }
+
+  /* info bar — two rows on mobile */
+  .info-bar {
+    flex-wrap: wrap;
+    gap: 10px 0;
+    padding: 4px 0;
+  }
+  .info-item, .info-item-net {
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+  }
+  .info-label { font-size: 10px; }
+  .info-val   { font-size: 13px; }
+  .info-unit  { font-size: 10px; }
+  .info-pipe, .info-divider { height: 14px; }
 }
