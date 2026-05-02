@@ -1,325 +1,539 @@
 /* ═══════════════════════════════════════════════════════════
-   Home Dashboard — app.js  (ES module)
+   Home Dashboard — Stylesheet
    ═══════════════════════════════════════════════════════════ */
 
-import { initializeApp }               from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword,
-         onAuthStateChanged }          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getDatabase, ref, onValue }   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500&family=Barlow+Semi+Condensed:wght@400;500&display=swap');
 
-/* ── Firebase config ─────────────────────────────────────── */
-const firebaseConfig = {
-  apiKey:            'AIzaSyBhjBzQPlaGYicVXw015qoQRMkSQXyOMfU',
-  authDomain:        'homedashboard-5b2e0.firebaseapp.com',
-  databaseURL:       'https://homedashboard-5b2e0-default-rtdb.europe-west1.firebasedatabase.app',
-  projectId:         'homedashboard-5b2e0',
-  storageBucket:     'homedashboard-5b2e0.firebasestorage.app',
-  messagingSenderId: '707757582553',
-  appId:             '1:707757582553:web:03c672dcb6125afc87b6c8',
-};
+/* ── Variables: dark (default) ─────────────────────────────── */
+:root {
+  --bg:           #0d1117;
+  --bg-card:      #161b25;
+  --bg-hover:     #1e2330;
+  --border:       #2a3040;
+  --border-sub:   #1e2330;
+  --text:         #e8e4dc;
+  --text-muted:   #555;
+  --text-faint:   #333;
+  --solar:        #2a4a3a;
+  --battery:      #1a4a2a;
+  --neutral:      #2a3040;
+  --cost-pos:     #4ade80;
+  --cost-neg:     #f87171;
+  --badge-ok-bg:  #0f2a1a;
+  --badge-ok-fg:  #4ade80;
+  --badge-warn-bg:#2a1a0a;
+  --badge-warn-fg:#fb923c;
+  --badge-off-bg: #1e2330;
+  --badge-off-fg: #555;
+  --live-bg:      #0f2a1a;
+  --live-fg:      #4ade80;
+  --live-dot:     #4ade80;
+  --text-warm:    #8c7d6a;
+  --text-sand:    #6e6054;
+  --text-sand-lo: #4a4038;
+  --toggle-bg:    #2e2318;
+  --toggle-border:#4a3828;
+  --toggle-knob:  #d4a96a;
+  --toggle-x:     0px;
+  --house-opacity: 0.5;
+  --house-blend:   normal;}
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getDatabase(app);
-
-/* ── Weather code map (WMO) ──────────────────────────────── */
-const WX = {
-  0:  { label: 'Clear sky',          icon: '☀️' },
-  1:  { label: 'Mainly clear',       icon: '🌤️' },
-  2:  { label: 'Partly cloudy',      icon: '⛅' },
-  3:  { label: 'Overcast',           icon: '☁️' },
-  45: { label: 'Foggy',              icon: '🌫️' },
-  48: { label: 'Icy fog',            icon: '🌫️' },
-  51: { label: 'Light drizzle',      icon: '🌦️' },
-  53: { label: 'Drizzle',            icon: '🌦️' },
-  55: { label: 'Heavy drizzle',      icon: '🌧️' },
-  61: { label: 'Light rain',         icon: '🌧️' },
-  63: { label: 'Rain',               icon: '🌧️' },
-  65: { label: 'Heavy rain',         icon: '🌧️' },
-  71: { label: 'Light snow',         icon: '🌨️' },
-  73: { label: 'Snow',               icon: '❄️' },
-  75: { label: 'Heavy snow',         icon: '❄️' },
-  77: { label: 'Snow grains',        icon: '🌨️' },
-  80: { label: 'Rain showers',       icon: '🌦️' },
-  81: { label: 'Showers',            icon: '🌧️' },
-  82: { label: 'Heavy showers',      icon: '⛈️' },
-  85: { label: 'Snow showers',       icon: '🌨️' },
-  86: { label: 'Heavy snow showers', icon: '❄️' },
-  95: { label: 'Thunderstorm',       icon: '⛈️' },
-  96: { label: 'Thunderstorm',       icon: '⛈️' },
-  99: { label: 'Thunderstorm',       icon: '⛈️' },
-};
-
-/* ── Theme ───────────────────────────────────────────────── */
-const THEME_KEY = 'hd_theme';
-
-function applyTheme(light) {
-  document.documentElement.classList.toggle('light', light);
-}
-applyTheme(localStorage.getItem(THEME_KEY) === 'light');
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('theme-toggle').addEventListener('click', () => {
-    const isLight = document.documentElement.classList.toggle('light');
-    localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
-    updateHouseImage();
-  });
-});
-
-/* ── House theme-based image swap ────────────────────────── */
-const HOUSE_DAY   = 'https://raw.githubusercontent.com/agent365924/HomeDashboard/b0b5655a8d8a950e6f0d99c49ad9f3599e26f4f0/house_day.png';
-const HOUSE_NIGHT = 'https://raw.githubusercontent.com/agent365924/HomeDashboard/1679d48f1a24f6805e6035273b3c2d107453f451/house_night.png';
-
-function updateHouseImage() {
-  const img = document.getElementById('house-img');
-  if (!img) return;
-  const isLight = document.documentElement.classList.contains('light');
-  img.src = isLight ? HOUSE_DAY : HOUSE_NIGHT;
+/* ── Variables: light ──────────────────────────────────────── */
+html.light {
+  --bg:           #f5f4f0;
+  --bg-card:      #ffffff;
+  --bg-hover:     #f0ede8;
+  --border:       #e0ddd5;
+  --border-sub:   #f0ede8;
+  --text:         #1a1a18;
+  --text-muted:   #999;
+  --text-faint:   #ccc;
+  --solar:        #c8d8b0;
+  --battery:      #a0d4b0;
+  --neutral:      #d0cdc5;
+  --cost-pos:     #3b6d11;
+  --cost-neg:     #a32d2d;
+  --badge-ok-bg:  #eaf3de;
+  --badge-ok-fg:  #3b6d11;
+  --badge-warn-bg:#fff7ed;
+  --badge-warn-fg:#c2410c;
+  --badge-off-bg: #f0ede8;
+  --badge-off-fg: #999;
+  --live-bg:      #eaf3de;
+  --live-fg:      #3b6d11;
+  --live-dot:     #63c521;
+  --text-warm:    #b8a898;
+  --text-sand:    #9a8878;
+  --text-sand-lo: #7a6858;
+  --toggle-bg:    #e8d5b0;
+  --toggle-border:#c8a870;
+  --toggle-knob:  #7a4a18;
+  --toggle-x:     16px;
+  --house-opacity: 0.9;
+  --house-blend:  multiply;
 }
 
-/* ── Auth ────────────────────────────────────────────────── */
-onAuthStateChanged(auth, (user) => {
-  const overlay = document.getElementById('login-overlay');
-  if (user) {
-    overlay.style.opacity = '0';
-    setTimeout(() => overlay.classList.add('hidden'), 400);
-    startApp();
-  } else {
-    overlay.classList.remove('hidden');
-    overlay.style.opacity = '1';
-    document.getElementById('email-input')?.focus();
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: background .3s, color .3s;
+  min-height: 100vh;
+}
+
+/* ── App shell ─────────────────────────────────────────────── */
+.app {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.header {
+  padding: 24px 0 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.title {
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+}
+.subtitle {
+  font-size: 12px;
+  color: var(--text-warm);
+  margin-top: 4px;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+/* status indicators */
+.status-live, .status-stale, .status-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-weight: 400;
+  border-radius: 99px;
+  padding: 4px 12px;
+}
+.status-live  { background: var(--live-bg);  color: var(--live-fg); }
+.status-stale { background: var(--badge-warn-bg); color: var(--badge-warn-fg); }
+.status-error { background: #2a1a0a; color: #fb923c; }
+html.light .status-error { background: #fff7ed; color: #c2410c; }
+.hidden { display: none !important; }
+
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--live-dot);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+/* theme toggle — warm amber */
+.theme-toggle {
+  cursor: pointer;
+  width: 36px; height: 20px;
+  border-radius: 99px;
+  background: var(--toggle-bg);
+  border: 0.5px solid var(--toggle-border);
+  position: relative;
+  transition: background .3s;
+  flex-shrink: 0;
+}
+.theme-knob {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--toggle-knob);
+  transform: translateX(var(--toggle-x));
+  transition: transform .3s, background .3s;
+}
+
+/* ── Scene ─────────────────────────────────────────────────── */
+.scene {
+  position: relative;
+  margin-top: 20px;
+  height: 480px;
+}
+
+/* connector lines */
+.connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.line {
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+  fill: none;
+}
+.line-solar   { stroke: var(--solar); }
+.line-neutral { stroke: var(--neutral); }
+.line-battery { stroke: var(--battery); stroke-width: 2; }
+.line-grid    { stroke: var(--neutral); }
+.line-import  { stroke: var(--badge-warn-fg); }
+.line-export  { stroke: var(--battery); }
+
+/* cards */
+.card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  position: absolute;
+  width: 210px;
+  transition: background .3s, border-color .3s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+html.light .card {
+  background: rgba(255, 255, 255, 0.7);
+}
+.card-tl { top: 16px; left: 0; }
+.card-tr { top: 16px; right: 0; }
+.card-bl { bottom: 16px; left: 0; }
+.card-br { bottom: 16px; right: 0; }
+
+.card-icon  { font-size: 30px; line-height: 1; margin-bottom: 10px; }
+.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--text-sand); font-family: 'Barlow', sans-serif; font-weight: 400; }
+.card-value { font-size: 36px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.1; margin: 4px 0 0; font-family: 'Barlow Semi Condensed', sans-serif; }
+.card-value em { font-size: 16px; font-weight: 400; color: var(--text-sand); font-style: normal; font-family: 'Barlow', sans-serif; letter-spacing: 0.04em; }
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-warm);
+  margin-top: 8px;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.card-row b {
+  font-weight: 500;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+/* house */
+.house {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px; height: 420px;
+  pointer-events: none;
+}
+.house img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* info bar */
+.info-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 8px 4px;
+  margin-top: -10px;
+}
+.info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+.info-item-net { flex: 0.7; }
+.info-label {
+  font-family: 'Barlow', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-warm);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.info-val {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 36px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  line-height: 1;
+}
+.info-divider {
+  width: 0.5px;
+  height: 52px;
+  background: var(--border);
+  flex-shrink: 0;
+  align-self: flex-end;
+  margin-bottom: 4px;
+}
+.info-pipe {
+  width: 1px;
+  height: 60px;
+  background: var(--text-sand);
+  opacity: 0.4;
+  flex-shrink: 0;
+  margin: 0 4px;
+  align-self: flex-end;
+  margin-bottom: 4px;
+}
+.info-item-net { flex: 0.7; }
+
+/* cost color helpers */
+.cost-pos { color: var(--cost-pos) !important; }
+.cost-neg { color: var(--cost-neg) !important; }
+.cost-neutral { color: var(--text-muted) !important; }
+
+/* ── Section wrapper ───────────────────────────────────────── */
+.section { margin-top: 20px; }
+.section-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text-sand);
+  font-family: 'Barlow', sans-serif;
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+
+/* ── System status ─────────────────────────────────────────── */
+.sys-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 18px 20px;
+  transition: background .3s, border-color .3s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+html.light .sys-card {
+  background: rgba(255, 255, 255, 0.7);
+}
+.sys-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.sys-col { display: flex; flex-direction: column; }
+.sys-col:first-child {
+  border-right: 0.5px solid var(--border);
+  padding-right: 20px;
+}
+.sys-col:last-child { padding-left: 20px; }
+.sys-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--border-sub);
+  font-size: 13px;
+}
+.sys-row:last-child { border-bottom: none; }
+.sys-key { color: var(--text-warm); font-family: 'Barlow', sans-serif; font-weight: 400; letter-spacing: 0.03em; }
+.sys-val {
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: right;
+  letter-spacing: 0.02em;
+}
+
+/* badges */
+.badge {
+  font-family: 'Barlow', sans-serif;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.badge-ok   { background: #1e2a1a; color: #a8c890; }
+html.light .badge-ok { background: #e8f0e0; color: #5a7840; }
+.badge-warn { background: #2a2218; color: #c8a870; }
+html.light .badge-warn { background: #f0e8d8; color: #8a6030; }
+.badge-off  { background: #1e1e1a; color: #706860; }
+html.light .badge-off { background: #e8e4dc; color: #908880; }
+.badge-info { background: #1e2228; color: #a0b8c8; }
+html.light .badge-info { background: #e0e8f0; color: #507090; }
+
+/* ── Monthly history ───────────────────────────────────────── */
+.month-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 9px;
+  transition: background .3s, border-color .3s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+html.light .month-card {
+  background: rgba(255, 255, 255, 0.7);
+}
+.month-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; font-family: 'Barlow Semi Condensed', sans-serif; letter-spacing: 0.3px; }
+.month-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-warm);
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--border-sub);
+  font-family: 'Barlow', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.month-row:last-child { border-bottom: none; }
+.month-row b {
+  font-weight: 500;
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.month-row b.pos { color: var(--cost-pos); }
+.month-row b.neg { color: var(--cost-neg); }
+
+/* skeleton loader */
+.month-skeleton {
+  height: 80px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  animation: shimmer 1.4s infinite;
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 200% 100%;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── Login overlay ─────────────────────────────────────────── */
+.login-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  transition: opacity .4s ease;
+}
+.login-overlay.hidden { display: none; }
+
+.login-card {
+  background: var(--bg-card);
+  border: 0.5px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px rgba(0,0,0,.4);
+  width: 100%; max-width: 22rem;
+  padding: 2.5rem 2rem;
+  display: flex; flex-direction: column; gap: 2rem;
+}
+.login-header {
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+}
+.login-icon    { font-size: 2rem; }
+.login-title   { font-size: 20px; font-weight: 500; color: var(--text); }
+.login-subtitle { font-size: 13px; color: var(--text-muted); }
+.login-form    { display: flex; flex-direction: column; gap: 1rem; }
+.form-group    { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 12px; color: var(--text-muted); }
+
+.login-form input {
+  width: 100%;
+  background: var(--bg);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  transition: border-color .2s;
+}
+.login-form input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.login-form input.shake { animation: shake .4s ease; border-color: #dc2626; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}   60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+
+.login-error { font-size: 12px; color: #f87171; text-align: center; min-height: 1.2em; display: none; }
+.login-error.visible { display: block; }
+
+.btn { cursor: pointer; border: none; font-family: 'Barlow', sans-serif; font-size: 14px; transition: all .2s; }
+.btn-primary {
+  background: #2563eb; color: #fff;
+  border-radius: 10px; padding: 10px 0;
+  width: 100%; font-weight: 500;
+}
+.btn-primary:hover   { background: #1d4ed8; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .app { padding: 0 12px 48px; }
+  .scene { height: 400px; }
+  .house { width: 260px; height: 260px; }
+
+  /* cards scale to ~44% of viewport so two fit side by side */
+  .card {
+    width: 44vw;
+    min-width: 0;
+    padding: 10px 12px;
   }
-});
+  .card-icon  { font-size: 18px; margin-bottom: 5px; }
+  .card-label { font-size: 10px; }
+  .card-value { font-size: 22px; letter-spacing: 0.2px; }
+  .card-value em { font-size: 12px; }
+  .card-row   { font-size: 11px; margin-top: 5px; }
+  .card-row b { font-size: 11px; }
 
-async function doLogin() {
-  const email    = document.getElementById('email-input').value.trim();
-  const password = document.getElementById('password-input').value;
-  const errorEl  = document.getElementById('login-error');
-  const btn      = document.getElementById('login-btn');
-  errorEl.classList.remove('visible');
-  btn.disabled    = true;
-  btn.textContent = '…';
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-  } catch {
-    errorEl.classList.add('visible');
-    const pw = document.getElementById('password-input');
-    pw.value = '';
-    pw.classList.add('shake');
-    pw.addEventListener('animationend', () => pw.classList.remove('shake'), { once: true });
-    pw.focus();
-  } finally {
-    btn.disabled    = false;
-    btn.textContent = 'Enter';
+  .sys-grid { grid-template-columns: 1fr; }
+  .sys-col:first-child {
+    border-right: none;
+    border-bottom: 0.5px solid var(--border);
+    padding-right: 0;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
   }
+  .sys-col:last-child { padding-left: 0; }
+
+  .title { font-size: 24px; }
+
+  /* info bar mobile */
+  .info-bar { gap: 4px; margin-top: -6px; }
+  .info-val  { font-size: 24px; }
+  .info-label { font-size: 10px; }
+  .info-divider { height: 36px; }
+  .info-pipe    { height: 42px; }
 }
-
-/* ── Status helpers ──────────────────────────────────────── */
-let staleTimer = null;
-
-function setStatus(type) {
-  document.getElementById('status-live').classList.add('hidden');
-  document.getElementById('status-stale').classList.add('hidden');
-  document.getElementById('status-error').classList.add('hidden');
-  if (type) document.getElementById('status-' + type).classList.remove('hidden');
-}
-
-function resetStaleTimer() {
-  clearTimeout(staleTimer);
-  staleTimer = setTimeout(() => setStatus('stale'), 35000);
-}
-
-/* ── App start ───────────────────────────────────────────── */
-function startApp() {
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => init());
-  } else {
-    init();
-  }
-}
-
-function init() {
-  updateHouseImage();
-  subscribeLive();
-  subscribeSensors();
-  subscribeNetwork();
-  subscribeTotals();
-}
-
-/* ── Live data ───────────────────────────────────────────── */
-function subscribeLive() {
-  onValue(ref(db, '/live'), (snap) => {
-    const d = snap.val();
-    if (!d) return;
-    renderLive(d);
-    resetStaleTimer();
-    setStatus('live');
-    const ts = new Date(d.timestamp * 1000);
-    document.getElementById('last-update').textContent =
-      'Last update: ' + ts.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  }, () => setStatus('error'));
-}
-
-function renderLive(d) {
-  /* generation — real-time kW */
-  set('gen-kw', fmt(d.generation_kw, 2));
-  set('gen-autonomy', d.rel_self_consumption != null ? fmt(d.rel_self_consumption, 1) + ' %' : '— %');
-
-  /* weather */
-  set('wx-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) + '°' : '—°');
-  const wx = WX[d.weathercode] ?? { label: '—', icon: '⛅' };
-  const wxIcon = document.getElementById('wx-icon');
-  if (wxIcon) wxIcon.textContent = wx.icon;
-  set('wx-desc', wx.label);
-
-  /* battery */
-  set('bat-soc', fmt(d.battery_soc, 1));
-  set('bat-kw',  fmt(Math.abs(d.battery_kw), 2) + ' kW');
-
-  /* grid card — consumption as main, net grid as sub */
-  set('grid-main', fmt(d.consumption_kw, 2));
-  const netGrid = d.grid_import_kw - d.grid_export_kw;
-  const netStr  = netGrid < 0
-    ? '−' + fmt(Math.abs(netGrid), 2) + ' kW'
-    : fmt(netGrid, 2) + ' kW';
-  set('grid-net', netStr);
-
-  /* system status panel */
-  setBadge('sys-bat-mode',    d.battery_mode,
-    d.battery_mode === 'normal' ? 'ok' : 'warn');
-  setBadge('sys-bat-standby', d.battery_standby ? 'active' : 'off',
-    d.battery_standby ? 'warn' : 'off');
-  setBadge('sys-backup',      d.backup_mode ? 'on' : 'off',
-    d.backup_mode ? 'warn' : 'off');
-  setBadge('sys-meter', d.meter_mode ?? '—', 'info');
-  set('sys-e-day',    d.e_day_kwh  != null ? fmt(d.e_day_kwh,  1) + ' kWh' : '—');
-  set('sys-e-year',   d.e_year_kwh != null ? fmt(d.e_year_kwh, 0) + ' kWh' : '—');
-  set('sys-e-total',  d.e_total_kwh != null
-    ? (d.e_total_kwh / 1000000).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' MWh'
-    : '—');
-  set('sys-autonomy', d.rel_autonomy         != null ? fmt(d.rel_autonomy, 1) + ' %' : '—');
-  set('sys-self',     d.rel_self_consumption != null ? fmt(d.rel_self_consumption, 1) + ' %' : '—');
-}
-
-/* ── Sensors ─────────────────────────────────────────────── */
-function subscribeSensors() {
-  onValue(ref(db, '/sensors/thermo_hygrometer'), (snap) => {
-    const d = snap.val();
-    if (!d) return;
-    set('info-temp', d.temperature != null ? fmt(d.temperature, 1) + '°' : '—°');
-    set('info-hum',  d.humidity    != null ? fmt(d.humidity, 0) + ' %' : '— %');
-  });
-}
-
-/* ── Network ─────────────────────────────────────────────── */
-function subscribeNetwork() {
-  onValue(ref(db, '/network'), (snap) => {
-    const d = snap.val();
-    if (!d) return;
-    set('info-dl',   d.download_mbps != null ? fmt(d.download_mbps, 0) : '—');
-    set('info-ul',   d.upload_mbps   != null ? fmt(d.upload_mbps,   0) : '—');
-    set('info-ping', d.ping_ms       != null ? fmt(d.ping_ms,       0) : '—');
-  });
-}
-
-/* ── Totals ──────────────────────────────────────────────── */
-function subscribeTotals() {
-  const today = new Date().toISOString().slice(0, 10);
-
-  // today's running totals
-  onValue(ref(db, `/totals/daily/${today}`), (snap) => {
-    const d = snap.val();
-    if (!d) return;
-    set('today-gen',  fmt(d.generation_kwh,  1) + ' kWh');
-    set('today-cons', fmt(d.consumption_kwh, 1) + ' kWh');
-    set('today-imp',  fmt(d.grid_import_kwh, 2) + ' kWh');
-    set('today-exp',  fmt(d.grid_export_kwh, 2) + ' kWh');
-    const costEl = document.getElementById('today-cost');
-    if (costEl && d.cost_eur != null) {
-      const v = d.cost_eur;
-      costEl.textContent = (v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' €';
-      costEl.className   = 'sys-val ' + (v <= 0 ? 'cost-pos' : 'cost-neg');
-    }
-  });
-
-  // monthly history — combine /totals/monthly + current month from /totals/daily
-  onValue(ref(db, '/totals/monthly'), (snap) => {
-    const monthly = snap.val() || {};
-    onValue(ref(db, '/totals/daily'), (snapD) => {
-      const daily = snapD.val() || {};
-      renderHistory(monthly, daily);
-    }, { onlyOnce: true });
-  });
-}
-
-function renderHistory(monthly, daily) {
-  // aggregate daily entries by month for current month
-  const byMonth = { ...monthly };
-
-  Object.entries(daily).forEach(([date, vals]) => {
-    const key = date.slice(0, 7); // YYYY-MM
-    if (!byMonth[key]) {
-      byMonth[key] = { generation_kwh: 0, consumption_kwh: 0,
-                       grid_import_kwh: 0, grid_export_kwh: 0, cost_eur: 0 };
-    }
-    byMonth[key].generation_kwh  = (byMonth[key].generation_kwh  || 0) + (vals.generation_kwh  || 0);
-    byMonth[key].consumption_kwh = (byMonth[key].consumption_kwh || 0) + (vals.consumption_kwh || 0);
-    byMonth[key].grid_import_kwh = (byMonth[key].grid_import_kwh || 0) + (vals.grid_import_kwh || 0);
-    byMonth[key].grid_export_kwh = (byMonth[key].grid_export_kwh || 0) + (vals.grid_export_kwh || 0);
-    byMonth[key].cost_eur        = (byMonth[key].cost_eur        || 0) + (vals.cost_eur        || 0);
-  });
-
-  const list = document.getElementById('history-list');
-  list.innerHTML = '';
-
-  Object.entries(byMonth)
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .forEach(([key, t]) => {
-      const [y, m]     = key.split('-');
-      const monthName  = new Date(+y, +m - 1, 1)
-        .toLocaleString('de-DE', { month: 'long', year: 'numeric' });
-      const costClass  = (t.cost_eur || 0) <= 0 ? 'cost-pos' : 'cost-neg';
-      const card       = document.createElement('div');
-      card.className   = 'month-card';
-      card.innerHTML   = `
-        <div class="month-title">${monthName}</div>
-        <div class="month-row"><span>Total Generation</span><b>${fmt(t.generation_kwh,  1)} kWh</b></div>
-        <div class="month-row"><span>Total Consumption</span><b>${fmt(t.consumption_kwh, 1)} kWh</b></div>
-        <div class="month-row"><span>From Grid</span><b>${fmt(t.grid_import_kwh, 1)} kWh</b></div>
-        <div class="month-row"><span>To Grid</span><b>${fmt(t.grid_export_kwh,  1)} kWh</b></div>
-        <div class="month-row"><span>Energy Cost</span><b class="${costClass}">${fmt(Math.abs(t.cost_eur || 0), 2)} €</b></div>
-      `;
-      list.appendChild(card);
-    });
-}
-
-/* ── Utilities ───────────────────────────────────────────── */
-function set(id, text) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = text;
-}
-
-function setBadge(id, text, type) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = text;
-  el.className   = 'badge badge-' + (type || 'off');
-}
-
-function fmt(val, decimals) {
-  if (val == null || isNaN(val)) return '—';
-  return Number(val).toLocaleString('de-DE', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  });
-}
-
-/* ── Wire events ─────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('login-btn')
-    .addEventListener('click', doLogin);
-  document.getElementById('email-input')
-    .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-  document.getElementById('password-input')
-    .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
-});
