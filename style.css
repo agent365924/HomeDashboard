@@ -241,7 +241,7 @@ html.light .card {
   position: absolute;
   left: 50%; top: 50%;
   transform: translate(-50%, -50%);
-  width: 500px; height: 500px;
+  width: 480px; height: 480px;
   pointer-events: none;
 }
 .house img {
