@@ -268,7 +268,7 @@ html.light .card {
 .info-item-net { flex: 0.7; }
 .info-label {
   font-family: 'Barlow', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 400;
   color: var(--text-warm);
   letter-spacing: 0.04em;
