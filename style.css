@@ -307,7 +307,7 @@ html.light .card {
 .cost-neutral { color: var(--text-muted) !important; }
 
 /* ── Section wrapper ───────────────────────────────────────── */
-.section { margin-top: 20px; }
+.section { margin-top: 10px; }
 .section-label {
   font-size: 11px;
   text-transform: uppercase;
