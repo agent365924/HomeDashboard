@@ -68,7 +68,7 @@
     <div class="card card-tl">
       <div class="card-icon">☀️</div>
       <div class="card-value"><span id="gen-kw">—</span> <em>kW</em></div>
-      <div class="card-row"><span>Self-consumption</span><b id="gen-autonomy">— %</b></div>
+      <div class="card-row"><span>Self usage</span><b id="gen-autonomy">— %</b></div>
     </div>
 
     <!-- Weather card -->
@@ -92,6 +92,18 @@
       <div class="card-row"><span>Grid</span><b id="grid-net">— kW</b></div>
     </div>
 
+    <!-- Sensor status pills -->
+    <div class="scene-status">
+      <div class="scene-pill">
+        <span class="pill-dot" id="pill-online-dot"></span>
+        <span id="pill-online-text">—</span>
+      </div>
+      <div class="scene-pill">
+        <span class="pill-dot" id="pill-alarm-dot"></span>
+        <span id="pill-alarm-text">—</span>
+      </div>
+    </div>
+
   </div>
 
   <!-- Info bar: sensors + network -->
@@ -108,12 +120,12 @@
       </div>
       <div class="info-pipe"></div>
       <div class="info-item info-item-net">
-        <span class="info-label">↓ Down</span>
+        <span class="info-label">↓ Download</span>
         <span class="info-val" id="info-dl">—</span>
       </div>
       <div class="info-divider"></div>
       <div class="info-item info-item-net">
-        <span class="info-label">↑ Up</span>
+        <span class="info-label">↑ Upload</span>
         <span class="info-val" id="info-ul">—</span>
       </div>
       <div class="info-divider"></div>
@@ -124,97 +136,185 @@
     </div>
   </div>
 
-  <!-- Daily totals -->
-  <div class="section">
-    <div class="section-label">Today</div>
-    <div class="sys-card">
-      <div class="sys-grid">
-        <div class="sys-col">
-          <div class="sys-row">
-            <span class="sys-key">Generation</span>
-            <span class="sys-val" id="today-gen">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Consumption</span>
-            <span class="sys-val" id="today-cons">—</span>
-          </div>
-        </div>
-        <div class="sys-col">
-          <div class="sys-row">
-            <span class="sys-key">Grid import</span>
-            <span class="sys-val" id="today-imp">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Grid export</span>
-            <span class="sys-val" id="today-exp">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Energy costs</span>
-            <span class="sys-val" id="today-cost">—</span>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Tab bar -->
+  <div class="tab-bar" id="tab-bar">
+    <button class="tab active" data-tab="energy">Energy</button>
+    <button class="tab" data-tab="climate">Climate</button>
+    <button class="tab" data-tab="network">Network</button>
+    <button class="tab" data-tab="security">Security</button>
   </div>
 
-  <!-- Monthly overview -->
-  <div class="section">
-    <div class="section-label">Monthly overview</div>
-    <div id="history-list">
-      <div class="month-card">
-        <div class="month-skeleton"></div>
-      </div>
-    </div>
-  </div>
+  <!-- ── Panel: Energy ──────────────────────────────────────── -->
+  <div class="panel active" id="panel-energy">
 
-  <!-- System status -->
-  <div class="section">
-    <div class="section-label">System status</div>
-    <div class="sys-card">
-      <div class="sys-grid">
-        <div class="sys-col">
-          <div class="sys-row">
-            <span class="sys-key">Battery mode</span>
-            <span class="badge" id="sys-bat-mode">—</span>
+    <div class="section">
+      <div class="section-label">Today</div>
+      <div class="sys-card">
+        <div class="sys-grid">
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Generation</span>
+              <span class="sys-val" id="today-gen">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Consumption</span>
+              <span class="sys-val" id="today-cons">—</span>
+            </div>
           </div>
-          <div class="sys-row">
-            <span class="sys-key">Battery standby</span>
-            <span class="badge" id="sys-bat-standby">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Backup mode</span>
-            <span class="badge" id="sys-backup">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Meter mode</span>
-            <span class="badge" id="sys-meter">—</span>
-          </div>
-        </div>
-        <div class="sys-col">
-          <div class="sys-row">
-            <span class="sys-key">Today's generation</span>
-            <span class="sys-val" id="sys-e-day">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Year to date</span>
-            <span class="sys-val" id="sys-e-year">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Lifetime total</span>
-            <span class="sys-val" id="sys-e-total">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Autonomy</span>
-            <span class="sys-val" id="sys-autonomy">—</span>
-          </div>
-          <div class="sys-row">
-            <span class="sys-key">Self-consumption</span>
-            <span class="sys-val" id="sys-self">—</span>
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">From Grid</span>
+              <span class="sys-val" id="today-imp">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">To Grid</span>
+              <span class="sys-val" id="today-exp">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Energy costs</span>
+              <span class="sys-val" id="today-cost">—</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+
+    <div class="section">
+      <div class="section-label">Monthly overview</div>
+      <div id="history-list">
+        <div class="month-card">
+          <div class="month-skeleton"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">System status</div>
+      <div class="sys-card">
+        <div class="sys-grid">
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Battery mode</span>
+              <span class="badge" id="sys-bat-mode">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Battery standby</span>
+              <span class="badge" id="sys-bat-standby">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Backup mode</span>
+              <span class="badge" id="sys-backup">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Meter mode</span>
+              <span class="badge" id="sys-meter">—</span>
+            </div>
+          </div>
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Lifetime total</span>
+              <span class="sys-val" id="sys-e-total">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Autonomy</span>
+              <span class="sys-val" id="sys-autonomy">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Self usage</span>
+              <span class="sys-val" id="sys-self">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-energy -->
+
+  <!-- ── Panel: Climate ─────────────────────────────────────── -->
+  <div class="panel" id="panel-climate">
+
+    <div class="section">
+      <div class="section-label">Indoor</div>
+      <div class="sys-card">
+        <div class="climate-grid">
+          <div class="climate-stat">
+            <div class="climate-label">Temperature</div>
+            <div class="climate-val"><span id="clim-temp">—</span><em>°</em></div>
+          </div>
+          <div class="climate-stat">
+            <div class="climate-label">Humidity</div>
+            <div class="climate-val"><span id="clim-hum">—</span><em>%</em></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Outdoor</div>
+      <div class="sys-card">
+        <div class="sys-grid">
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Temperature</span>
+              <span class="sys-val" id="clim-out-temp">—</span>
+            </div>
+          </div>
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Weather</span>
+              <span class="sys-val" id="clim-wx-desc">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-climate -->
+
+  <!-- ── Panel: Network ─────────────────────────────────────── -->
+  <div class="panel" id="panel-network">
+
+    <div class="section">
+      <div class="section-label">Speed test</div>
+      <div class="sys-card">
+        <div class="sys-grid">
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">↓ Download</span>
+              <span class="sys-val" id="net-dl">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">↑ Upload</span>
+              <span class="sys-val" id="net-ul">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Ping</span>
+              <span class="sys-val" id="net-ping">—</span>
+            </div>
+          </div>
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Last test</span>
+              <span class="sys-val" id="net-ts">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /panel-network -->
+
+  <!-- ── Panel: Security ───────────────────────────────────── -->
+  <div class="panel" id="panel-security">
+
+    <div class="section">
+      <div class="section-label">Sensors</div>
+      <div class="sys-card" id="security-list">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+
+  </div><!-- /panel-security -->
 
 </div><!-- /app -->
 
