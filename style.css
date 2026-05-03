@@ -31,9 +31,9 @@
   --text-warm:    #8c7d6a;
   --text-sand:    #6e6054;
   --text-sand-lo: #4a4038;
-  --toggle-bg:    #2e2318;
-  --toggle-border:#4a3828;
-  --toggle-knob:  #d4a96a;
+  --toggle-bg:    #1e1a16;
+  --toggle-border:#363028;
+  --toggle-knob:  var(--text-sand);
   --toggle-x:     0px;
   --house-opacity: 0.5;
   --house-blend:   normal;}
@@ -65,9 +65,9 @@ html.light {
   --text-warm:    #b8a898;
   --text-sand:    #9a8878;
   --text-sand-lo: #7a6858;
-  --toggle-bg:    #e8d5b0;
-  --toggle-border:#c8a870;
-  --toggle-knob:  #7a4a18;
+  --toggle-bg:    #DBCBB7;
+  --toggle-border:#c4b09c;
+  --toggle-knob:  var(--text-sand);
   --toggle-x:     16px;
   --house-opacity: 0.9;
   --house-blend:  multiply;
@@ -84,6 +84,7 @@ body {
   line-height: 1.5;
   transition: background .3s, color .3s;
   min-height: 100vh;
+  overflow-y: scroll;
 }
 
 /* ── App shell ─────────────────────────────────────────────── */
@@ -101,16 +102,15 @@ body {
   justify-content: space-between;
 }
 .title {
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 500;
   letter-spacing: 0.5px;
   font-family: 'Barlow Semi Condensed', sans-serif;
 }
 .subtitle {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-warm);
   margin-top: 4px;
-  font-family: 'Barlow', sans-serif;
   font-weight: 400;
   letter-spacing: 0.04em;
 }
@@ -126,7 +126,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-weight: 400;
   border-radius: 99px;
@@ -170,7 +170,7 @@ html.light .status-error { background: #fff7ed; color: #c2410c; }
 /* ── Scene ─────────────────────────────────────────────────── */
 .scene {
   position: relative;
-  margin-top: 20px;
+  margin-top: 13px;
   height: 480px;
 }
 
@@ -215,7 +215,7 @@ html.light .card {
 .card-br { bottom: 16px; right: 0; }
 
 .card-icon  { font-size: 30px; line-height: 1; margin-bottom: 10px; }
-.card-label { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; color: var(--text-sand); font-family: 'Barlow', sans-serif; font-weight: 400; }
+.card-label { font-size: 13px; text-transform: uppercase; letter-spacing: .12em; color: var(--text-sand); font-weight: 400; }
 .card-value { font-size: 36px; font-weight: 500; letter-spacing: 0.5px; line-height: 1.1; margin: 4px 0 0; font-family: 'Barlow Semi Condensed', sans-serif; }
 .card-value em { font-size: 16px; font-weight: 400; color: var(--text-sand); font-style: normal; font-family: 'Barlow', sans-serif; letter-spacing: 0.04em; }
 .card-row {
@@ -224,13 +224,11 @@ html.light .card {
   font-size: 13px;
   color: var(--text-warm);
   margin-top: 8px;
-  font-family: 'Barlow', sans-serif;
   font-weight: 400;
   letter-spacing: 0.02em;
 }
 .card-row b {
   font-weight: 500;
-  font-family: 'Barlow', sans-serif;
   font-size: 13px;
   color: var(--text);
   letter-spacing: 0.02em;
@@ -267,7 +265,6 @@ html.light .card {
 }
 .info-item-net { flex: 0.7; }
 .info-label {
-  font-family: 'Barlow', sans-serif;
   font-size: 13px;
   font-weight: 400;
   color: var(--text-warm);
@@ -309,11 +306,10 @@ html.light .card {
 /* ── Section wrapper ───────────────────────────────────────── */
 .section { margin-top: 10px; }
 .section-label {
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
   letter-spacing: .12em;
   color: var(--text-sand);
-  font-family: 'Barlow', sans-serif;
   font-weight: 400;
   margin-bottom: 10px;
 }
@@ -337,6 +333,7 @@ html.light .sys-card {
   gap: 0;
 }
 .sys-col { display: flex; flex-direction: column; }
+.sys-col-single { display: flex; flex-direction: column; }
 .sys-col:first-child {
   border-right: 0.5px solid var(--border);
   padding-right: 20px;
@@ -351,9 +348,8 @@ html.light .sys-card {
   font-size: 13px;
 }
 .sys-row:last-child { border-bottom: none; }
-.sys-key { color: var(--text-warm); font-family: 'Barlow', sans-serif; font-weight: 400; letter-spacing: 0.03em; }
+.sys-key { color: var(--text-warm); font-weight: 400; letter-spacing: 0.03em; }
 .sys-val {
-  font-family: 'Barlow', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
@@ -363,8 +359,7 @@ html.light .sys-card {
 
 /* badges */
 .badge {
-  font-family: 'Barlow', sans-serif;
-  font-size: 11px;
+  font-size: 13px;
   padding: 3px 10px;
   border-radius: 99px;
   font-weight: 500;
@@ -393,7 +388,7 @@ html.light .badge-info { background: #e0e8f0; color: #507090; }
 html.light .month-card {
   background: rgba(255, 255, 255, 0.7);
 }
-.month-title { font-size: 16px; font-weight: 500; margin-bottom: 4px; font-family: 'Barlow Semi Condensed', sans-serif; letter-spacing: 0.3px; }
+.month-title { font-size: 20px; font-weight: 500; margin-bottom: 4px; font-family: 'Barlow Semi Condensed', sans-serif; letter-spacing: 0.3px; }
 .month-row {
   display: flex;
   justify-content: space-between;
@@ -402,14 +397,12 @@ html.light .month-card {
   color: var(--text-warm);
   padding: 8px 0;
   border-bottom: 0.5px solid var(--border-sub);
-  font-family: 'Barlow', sans-serif;
   font-weight: 400;
   letter-spacing: 0.02em;
 }
 .month-row:last-child { border-bottom: none; }
 .month-row b {
   font-weight: 500;
-  font-family: 'Barlow', sans-serif;
   font-size: 13px;
   color: var(--text);
   letter-spacing: 0.02em;
@@ -444,7 +437,7 @@ html.light .month-card {
 .login-overlay.hidden { display: none; }
 
 .login-card {
-  background: var(--bg-card);
+  background: var(--bg);
   border: 0.5px solid var(--border);
   border-radius: 20px;
   box-shadow: 0 25px 50px rgba(0,0,0,.4);
@@ -461,7 +454,7 @@ html.light .month-card {
 .login-subtitle { font-size: 13px; color: var(--text-muted); }
 .login-form    { display: flex; flex-direction: column; gap: 1rem; }
 .form-group    { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 12px; color: var(--text-muted); }
+.form-group label { font-size: 13px; color: var(--text-muted); }
 
 .login-form input {
   width: 100%;
@@ -486,7 +479,7 @@ html.light .month-card {
   80%{transform:translateX(4px)}
 }
 
-.login-error { font-size: 12px; color: #f87171; text-align: center; min-height: 1.2em; display: none; }
+.login-error { font-size: 13px; color: #f87171; text-align: center; min-height: 1.2em; display: none; }
 .login-error.visible { display: block; }
 
 .btn { cursor: pointer; border: none; font-family: 'Barlow', sans-serif; font-size: 14px; transition: all .2s; }
@@ -498,17 +491,141 @@ html.light .month-card {
 .btn-primary:hover   { background: #1d4ed8; }
 .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 
+/* ── Scene status pills ────────────────────────────────────── */
+.scene-status {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+.scene-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  padding: 5px 14px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.07);
+  border: 0.5px solid var(--border);
+  color: var(--text-warm);
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+html.light .scene-pill {
+  background: rgba(255,255,255,0.6);
+}
+.pill-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-muted);
+}
+.pill-dot-ok    { background: var(--live-dot); }
+.pill-dot-alarm { background: var(--cost-neg); }
+.pill-dot-muted { background: var(--text-muted); }
+
+/* ── Tab bar ───────────────────────────────────────────────── */
+.tab-bar {
+  display: flex;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 4px;
+  margin-top: 20px;
+  gap: 2px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background .3s, border-color .3s;
+}
+html.light .tab-bar {
+  background: rgba(255, 255, 255, 0.7);
+}
+.tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  padding: 10px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.tab.active {
+  background: var(--text-sand);
+  color: #f0ece8;
+}
+.tab:not(.active):hover {
+  color: var(--text);
+}
+
+/* ── Panels ────────────────────────────────────────────────── */
+.panel         { display: none; }
+.panel.active  { display: block; }
+
+/* ── Climate panel ─────────────────────────────────────────── */
+.climate-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.climate-stat {
+  padding: 16px 20px;
+  text-align: center;
+}
+.climate-stat:first-child {
+  border-right: 0.5px solid var(--border);
+}
+.climate-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text-sand);
+  font-weight: 400;
+  margin-bottom: 10px;
+}
+.climate-val {
+  font-size: 36px;
+  font-weight: 500;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  color: var(--text);
+}
+.climate-val em {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-sand);
+  font-style: normal;
+  font-family: 'Barlow', sans-serif;
+}
+
+/* ── Security panel ────────────────────────────────────────── */
+.sensor-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .app { padding: 0 12px 48px; }
-  .scene { height: 390px; }
+  .scene { height: 390px; margin-top: 5px; }
   .house { width: 340px; height: 340px; }
 
   /* cards scale to ~44% of viewport so two fit side by side */
   .card {
     width: 44vw;
     min-width: 0;
-    padding: 10px 12px;
+    padding: 18px 12px;
   }
   .card-icon  { font-size: 18px; margin-bottom: 5px; }
   .card-label { font-size: 13px; }
@@ -527,7 +644,10 @@ html.light .month-card {
   }
   .sys-col:last-child { padding-left: 0; }
 
-  .title { font-size: 24px; }
+  .title { font-size: 28px; }
+
+  .scene-status { display: none; }
+  .tab { font-size: 15px; letter-spacing: 0.5px; }
 
   /* info bar mobile */
   .info-bar { gap: 4px; margin-top: -6px; }
