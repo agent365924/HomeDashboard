@@ -174,7 +174,7 @@ function renderLive(d) {
 
   /* battery */
   set('bat-soc', fmt(d.battery_soc, 1));
-  set('bat-kw',  fmt(Math.abs(d.battery_kw), 2) + ' kW');
+  set('bat-kw', fmt(d.battery_kw, 2) + ' kW');
 
   /* grid card — consumption as main, net grid as sub */
   set('grid-main', fmt(d.consumption_kw, 2));
