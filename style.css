@@ -511,9 +511,9 @@ html.light .month-card {
     padding: 10px 12px;
   }
   .card-icon  { font-size: 18px; margin-bottom: 5px; }
-  .card-label { font-size: 10px; }
+  .card-label { font-size: 13px; }
   .card-value { font-size: 22px; letter-spacing: 0.2px; }
-  .card-value em { font-size: 12px; }
+  .card-value em { font-size: 13px; }
   .card-row   { font-size: 11px; margin-top: 5px; }
   .card-row b { font-size: 11px; }
 
@@ -532,7 +532,7 @@ html.light .month-card {
   /* info bar mobile */
   .info-bar { gap: 4px; margin-top: -6px; }
   .info-val  { font-size: 24px; }
-  .info-label { font-size: 10px; }
+  .info-label { font-size: 13px; }
   .info-divider { height: 36px; }
   .info-pipe    { height: 42px; }
 }
