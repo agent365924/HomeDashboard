@@ -7,6 +7,10 @@ import { getAuth, signInWithEmailAndPassword,
          onAuthStateChanged }          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getDatabase, ref, onValue }   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
+/* ── Tariff ──────────────────────────────────────────────── */
+const PRICE_IMPORT_KWH = 0.31;
+const PRICE_EXPORT_KWH = 0.08;
+
 /* ── Firebase config ─────────────────────────────────────── */
 const firebaseConfig = {
   apiKey:            'AIzaSyBhjBzQPlaGYicVXw015qoQRMkSQXyOMfU',
@@ -184,6 +188,11 @@ function renderLive(d) {
     : fmt(netGrid, 2) + ' kW';
   set('grid-net', netStr);
 
+  /* climate panel — outdoor */
+  set('clim-out-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) + '°' : '—');
+  const wxClim = WX[d.weathercode] ?? { label: '—' };
+  set('clim-wx-desc', wxClim.label);
+
   /* system status panel */
   setBadge('sys-bat-mode',    d.battery_mode,
     d.battery_mode === 'normal' ? 'ok' : 'warn');
@@ -202,13 +211,79 @@ function renderLive(d) {
 }
 
 /* ── Sensors ─────────────────────────────────────────────── */
+const SECURITY_KEYS = [
+  'smoke_hwr', 'smoke_emi_schlafzimmer', 'smoke_emi_spielzimmer',
+  'smoke_schlafzimmer', 'smoke_eingang', 'smoke_buero_eg', 'water_leak',
+];
+
 function subscribeSensors() {
-  onValue(ref(db, '/sensors/thermo_hygrometer'), (snap) => {
-    const d = snap.val();
-    if (!d) return;
-    set('info-temp', d.temperature != null ? fmt(d.temperature, 1) + '°' : '—°');
-    set('info-hum',  d.humidity    != null ? fmt(d.humidity, 0) + ' %' : '— %');
+  onValue(ref(db, '/sensors'), (snap) => {
+    const sensors = snap.val();
+    if (!sensors) return;
+
+    const th = sensors.thermo_hygrometer;
+    if (th) {
+      set('info-temp', th.temperature != null ? fmt(th.temperature, 1) + '°' : '—°');
+      set('info-hum',  th.humidity    != null ? fmt(th.humidity, 0) + ' %' : '— %');
+      set('clim-temp', th.temperature != null ? fmt(th.temperature, 1) : '—');
+      set('clim-hum',  th.humidity    != null ? fmt(th.humidity, 0) : '—');
+    }
+
+    renderSensorPills(sensors);
+    renderSecurityPanel(sensors);
   });
+}
+
+function renderSensorPills(sensors) {
+  const entries = Object.values(sensors);
+  const offlineCount = entries.filter(s => !s.online).length;
+  const anyAlarm     = entries.some(s => s.alarm);
+
+  const onlineDot  = document.getElementById('pill-online-dot');
+  const onlineText = document.getElementById('pill-online-text');
+  const alarmDot   = document.getElementById('pill-alarm-dot');
+  const alarmText  = document.getElementById('pill-alarm-text');
+  if (!onlineDot) return;
+
+  if (offlineCount === 0) {
+    onlineDot.className  = 'pill-dot pill-dot-ok';
+    onlineText.textContent = 'online';
+  } else {
+    onlineDot.className  = 'pill-dot pill-dot-alarm';
+    onlineText.textContent = offlineCount + ' offline';
+  }
+
+  if (anyAlarm) {
+    alarmDot.className  = 'pill-dot pill-dot-alarm';
+    alarmText.textContent = 'ALARM';
+  } else {
+    alarmDot.className  = 'pill-dot pill-dot-muted';
+    alarmText.textContent = 'no alarms';
+  }
+}
+
+function renderSecurityPanel(sensors) {
+  const container = document.getElementById('security-list');
+  if (!container) return;
+
+  const rows = SECURITY_KEYS
+    .filter(k => sensors[k])
+    .map(k => {
+      const s = sensors[k];
+      const onlineClass = s.online ? 'badge-ok'   : 'badge-warn';
+      const onlineText  = s.online ? 'online'      : 'offline';
+      const alarmClass  = s.alarm  ? 'badge-warn'  : 'badge-off';
+      const alarmText   = s.alarm  ? 'ALARM'        : 'ok';
+      return `<div class="sys-row">
+        <span class="sys-key">${s.name}</span>
+        <div class="sensor-badges">
+          <span class="badge ${onlineClass}">${onlineText}</span>
+          <span class="badge ${alarmClass}">${alarmText}</span>
+        </div>
+      </div>`;
+    });
+
+  container.innerHTML = rows.join('');
 }
 
 /* ── Network ─────────────────────────────────────────────── */
@@ -219,6 +294,15 @@ function subscribeNetwork() {
     set('info-dl',   d.download_mbps != null ? fmt(d.download_mbps, 0) : '—');
     set('info-ul',   d.upload_mbps   != null ? fmt(d.upload_mbps,   0) : '—');
     set('info-ping', d.ping_ms       != null ? fmt(d.ping_ms,       0) : '—');
+    set('net-dl',    d.download_mbps != null ? fmt(d.download_mbps, 0) + ' Mbps' : '—');
+    set('net-ul',    d.upload_mbps   != null ? fmt(d.upload_mbps,   0) + ' Mbps' : '—');
+    set('net-ping',  d.ping_ms       != null ? fmt(d.ping_ms,       0) + ' ms'   : '—');
+    if (d.timestamp) {
+      const ts = new Date(d.timestamp * 1000);
+      set('net-ts', ts.toLocaleString('de-DE', {
+        day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
+      }));
+    }
   });
 }
 
@@ -235,8 +319,9 @@ function subscribeTotals() {
     set('today-imp',  fmt(d.grid_import_kwh, 2) + ' kWh');
     set('today-exp',  fmt(d.grid_export_kwh, 2) + ' kWh');
     const costEl = document.getElementById('today-cost');
-    if (costEl && d.cost_eur != null) {
-      const v = d.cost_eur;
+    if (costEl) {
+      const v = (d.grid_import_kwh || 0) * PRICE_IMPORT_KWH
+              - (d.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
       costEl.textContent = (v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' €';
       costEl.className   = 'sys-val ' + (v <= 0 ? 'cost-pos' : 'cost-neg');
     }
@@ -278,16 +363,25 @@ function renderHistory(monthly, daily) {
       const [y, m]     = key.split('-');
       const monthName  = new Date(+y, +m - 1, 1)
         .toLocaleString('de-DE', { month: 'long', year: 'numeric' });
-      const costClass  = (t.cost_eur || 0) <= 0 ? 'cost-pos' : 'cost-neg';
+      const cost       = (t.grid_import_kwh || 0) * PRICE_IMPORT_KWH
+                       - (t.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
+      const costClass  = cost <= 0 ? 'cost-pos' : 'cost-neg';
+      const costStr    = (cost < 0 ? '−' : '') + fmt(Math.abs(cost), 2) + ' €';
       const card       = document.createElement('div');
       card.className   = 'month-card';
       card.innerHTML   = `
         <div class="month-title">${monthName}</div>
-        <div class="month-row"><span>Total Generation</span><b>${fmt(t.generation_kwh,  1)} kWh</b></div>
-        <div class="month-row"><span>Total Consumption</span><b>${fmt(t.consumption_kwh, 1)} kWh</b></div>
-        <div class="month-row"><span>From Grid</span><b>${fmt(t.grid_import_kwh, 1)} kWh</b></div>
-        <div class="month-row"><span>To Grid</span><b>${fmt(t.grid_export_kwh,  1)} kWh</b></div>
-        <div class="month-row"><span>Energy Cost</span><b class="${costClass}">${fmt(Math.abs(t.cost_eur || 0), 2)} €</b></div>
+        <div class="sys-grid">
+          <div class="sys-col">
+            <div class="month-row"><span>Total Generation</span><b>${fmt(t.generation_kwh,  1)} kWh</b></div>
+            <div class="month-row"><span>Total Consumption</span><b>${fmt(t.consumption_kwh, 1)} kWh</b></div>
+          </div>
+          <div class="sys-col">
+            <div class="month-row"><span>From Grid</span><b>${fmt(t.grid_import_kwh, 1)} kWh</b></div>
+            <div class="month-row"><span>To Grid</span><b>${fmt(t.grid_export_kwh,  1)} kWh</b></div>
+            <div class="month-row"><span>Energy Cost</span><b class="${costClass}">${costStr}</b></div>
+          </div>
+        </div>
       `;
       list.appendChild(card);
     });
@@ -322,4 +416,13 @@ document.addEventListener('DOMContentLoaded', () => {
     .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('password-input')
     .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  document.getElementById('tab-bar').addEventListener('click', e => {
+    const btn = e.target.closest('.tab');
+    if (!btn) return;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+  });
 });
