@@ -120,13 +120,8 @@
       </div>
       <div class="info-pipe"></div>
       <div class="info-item info-item-net">
-        <span class="info-label">↓ Download</span>
+        <span class="info-label">Download</span>
         <span class="info-val" id="info-dl">—</span>
-      </div>
-      <div class="info-divider"></div>
-      <div class="info-item info-item-net">
-        <span class="info-label">↑ Upload</span>
-        <span class="info-val" id="info-ul">—</span>
       </div>
       <div class="info-divider"></div>
       <div class="info-item info-item-net">
@@ -153,12 +148,20 @@
         <div class="sys-grid">
           <div class="sys-col">
             <div class="sys-row">
-              <span class="sys-key">Generation</span>
+              <span class="sys-key">Total Generation</span>
               <span class="sys-val" id="today-gen">—</span>
             </div>
             <div class="sys-row">
-              <span class="sys-key">Consumption</span>
+              <span class="sys-key">Peak Generation</span>
+              <span class="sys-val" id="today-peak-gen">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Total Consumption</span>
               <span class="sys-val" id="today-cons">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Peak Consumption</span>
+              <span class="sys-val" id="today-peak-cons">—</span>
             </div>
           </div>
           <div class="sys-col">
@@ -171,10 +174,23 @@
               <span class="sys-val" id="today-exp">—</span>
             </div>
             <div class="sys-row">
-              <span class="sys-key">Energy costs</span>
+              <span class="sys-key">Autonomy</span>
+              <span class="sys-val" id="today-autonomy">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Energy Cost</span>
               <span class="sys-val" id="today-cost">—</span>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">24 H</div>
+      <div class="sys-card">
+        <div class="chart-wrap">
+          <canvas id="chart-24h"></canvas>
         </div>
       </div>
     </div>
@@ -234,37 +250,50 @@
   <div class="panel" id="panel-climate">
 
     <div class="section">
-      <div class="section-label">Indoor</div>
+      <div class="section-label">Climate</div>
       <div class="sys-card">
-        <div class="climate-grid">
-          <div class="climate-stat">
-            <div class="climate-label">Temperature</div>
-            <div class="climate-val"><span id="clim-temp">—</span><em>°</em></div>
+        <div class="sys-grid">
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Indoor Temp</span>
+              <span class="sys-val" id="clim-temp">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Peak Temperature</span>
+              <span class="sys-val" id="clim-peak-temp-in">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Humidity</span>
+              <span class="sys-val" id="clim-hum">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Peak Humidity</span>
+              <span class="sys-val" id="clim-peak-hum">—</span>
+            </div>
           </div>
-          <div class="climate-stat">
-            <div class="climate-label">Humidity</div>
-            <div class="climate-val"><span id="clim-hum">—</span><em>%</em></div>
+          <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Outdoor Temp</span>
+              <span class="sys-val" id="clim-out-temp">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Peak Temperature</span>
+              <span class="sys-val" id="clim-peak-temp-out">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Weather</span>
+              <span class="sys-val" id="clim-wx-desc">—</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-label">Outdoor</div>
+      <div class="section-label">24 H</div>
       <div class="sys-card">
-        <div class="sys-grid">
-          <div class="sys-col">
-            <div class="sys-row">
-              <span class="sys-key">Temperature</span>
-              <span class="sys-val" id="clim-out-temp">—</span>
-            </div>
-          </div>
-          <div class="sys-col">
-            <div class="sys-row">
-              <span class="sys-key">Weather</span>
-              <span class="sys-val" id="clim-wx-desc">—</span>
-            </div>
-          </div>
+        <div class="chart-wrap">
+          <canvas id="chart-climate"></canvas>
         </div>
       </div>
     </div>
@@ -275,17 +304,17 @@
   <div class="panel" id="panel-network">
 
     <div class="section">
-      <div class="section-label">Speed test</div>
+      <div class="section-label">Network</div>
       <div class="sys-card">
         <div class="sys-grid">
           <div class="sys-col">
             <div class="sys-row">
-              <span class="sys-key">↓ Download</span>
+              <span class="sys-key">Download</span>
               <span class="sys-val" id="net-dl">—</span>
             </div>
             <div class="sys-row">
-              <span class="sys-key">↑ Upload</span>
-              <span class="sys-val" id="net-ul">—</span>
+              <span class="sys-key">Peak Download</span>
+              <span class="sys-val" id="net-peak-dl">—</span>
             </div>
             <div class="sys-row">
               <span class="sys-key">Ping</span>
@@ -298,6 +327,15 @@
               <span class="sys-val" id="net-ts">—</span>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">24 H</div>
+      <div class="sys-card">
+        <div class="chart-wrap">
+          <canvas id="chart-network"></canvas>
         </div>
       </div>
     </div>
@@ -318,6 +356,7 @@
 
 </div><!-- /app -->
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>
 </html>
