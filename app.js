@@ -67,6 +67,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const isLight = document.documentElement.classList.toggle('light');
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
     updateHouseImage();
+    if (Object.keys(lastHistoryData).length) {
+      renderChart24h(lastHistoryData);
+      renderChartClimate(lastHistoryData);
+      renderChartNetwork(lastHistoryData);
+    }
   });
 });
 
@@ -148,6 +153,7 @@ function init() {
   subscribeSensors();
   subscribeNetwork();
   subscribeTotals();
+  subscribeHistory();
 }
 
 /* ── Live data ───────────────────────────────────────────── */
@@ -189,7 +195,7 @@ function renderLive(d) {
   set('grid-net', netStr);
 
   /* climate panel — outdoor */
-  set('clim-out-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) + '°' : '—');
+  set('clim-out-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) + ' °C' : '—');
   const wxClim = WX[d.weathercode] ?? { label: '—' };
   set('clim-wx-desc', wxClim.label);
 
@@ -225,8 +231,8 @@ function subscribeSensors() {
     if (th) {
       set('info-temp', th.temperature != null ? fmt(th.temperature, 1) + '°' : '—°');
       set('info-hum',  th.humidity    != null ? fmt(th.humidity, 0) + ' %' : '— %');
-      set('clim-temp', th.temperature != null ? fmt(th.temperature, 1) : '—');
-      set('clim-hum',  th.humidity    != null ? fmt(th.humidity, 0) : '—');
+      set('clim-temp', th.temperature != null ? fmt(th.temperature, 1) + ' °C' : '—');
+      set('clim-hum',  th.humidity    != null ? fmt(th.humidity, 0) + ' %' : '—');
     }
 
     renderSensorPills(sensors);
@@ -292,10 +298,8 @@ function subscribeNetwork() {
     const d = snap.val();
     if (!d) return;
     set('info-dl',   d.download_mbps != null ? fmt(d.download_mbps, 0) : '—');
-    set('info-ul',   d.upload_mbps   != null ? fmt(d.upload_mbps,   0) : '—');
     set('info-ping', d.ping_ms       != null ? fmt(d.ping_ms,       0) : '—');
     set('net-dl',    d.download_mbps != null ? fmt(d.download_mbps, 0) + ' Mbps' : '—');
-    set('net-ul',    d.upload_mbps   != null ? fmt(d.upload_mbps,   0) + ' Mbps' : '—');
     set('net-ping',  d.ping_ms       != null ? fmt(d.ping_ms,       0) + ' ms'   : '—');
     if (d.timestamp) {
       const ts = new Date(d.timestamp * 1000);
@@ -303,6 +307,303 @@ function subscribeNetwork() {
         day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit',
       }));
     }
+  });
+}
+
+/* ── 24 h history chart ──────────────────────────────────── */
+let chart24h        = null;
+let chartClimate    = null;
+let chartNetwork    = null;
+let lastHistoryData = {};
+
+function subscribeHistory() {
+  const today = new Date().toISOString().slice(0, 10);
+  onValue(ref(db, `/history/${today}`), (snap) => {
+    lastHistoryData = snap.val() || {};
+    renderChart24h(lastHistoryData);
+    renderChartClimate(lastHistoryData);
+    renderChartNetwork(lastHistoryData);
+  });
+}
+
+function renderChart24h(raw) {
+  const canvas = document.getElementById('chart-24h');
+  if (!canvas) return;
+
+  const style   = getComputedStyle(document.documentElement);
+  const gridClr = style.getPropertyValue('--border').trim();
+  const textClr = style.getPropertyValue('--text-warm').trim();
+  const bgCard  = style.getPropertyValue('--bg-card').trim();
+  const textMain = style.getPropertyValue('--text').trim();
+
+  const entries  = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
+  const labels   = entries.map(([t]) => t);
+  const genData  = entries.map(([, v]) => v.generation_kw  ?? null);
+  const consData = entries.map(([, v]) => v.consumption_kw ?? null);
+  const socData  = entries.map(([, v]) => v.battery_soc    ?? null);
+
+  if (chart24h) chart24h.destroy();
+
+  chart24h = new Chart(canvas.getContext('2d'), {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: 'Generation',
+          data: genData,
+          backgroundColor: 'rgba(74, 222, 128, 0.30)',
+          borderColor: '#4ade80',
+          borderWidth: 1,
+          borderRadius: 2,
+          yAxisID: 'y',
+          order: 2,
+        },
+        {
+          type: 'line',
+          label: 'Consumption',
+          data: consData,
+          borderColor: '#fb923c',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.3,
+          yAxisID: 'y',
+          order: 1,
+        },
+        {
+          type: 'line',
+          label: 'Battery SOC',
+          data: socData,
+          borderColor: '#60a5fa',
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.3,
+          yAxisID: 'soc',
+          order: 1,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          labels: {
+            color: textClr,
+            font: { family: 'Barlow', size: 13 },
+            boxWidth: 12,
+            padding: 16,
+          },
+        },
+        tooltip: {
+          backgroundColor:  bgCard,
+          borderColor:      gridClr,
+          borderWidth:      0.5,
+          titleColor:       textMain,
+          bodyColor:        textClr,
+          titleFont:        { family: 'Barlow Semi Condensed', size: 14, weight: '500' },
+          bodyFont:         { family: 'Barlow', size: 13 },
+          padding:          12,
+          cornerRadius:     12,
+          boxWidth:         10,
+          boxHeight:        10,
+          caretSize:        5,
+          callbacks: {
+            label(ctx) {
+              if (ctx.dataset.yAxisID === 'soc')
+                return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 1)} %`;
+              return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 2)} kW`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: textClr,
+            font: { family: 'Barlow', size: 12 },
+            maxTicksLimit: 9,
+            maxRotation: 0,
+          },
+          grid:   { color: gridClr },
+          border: { color: gridClr },
+        },
+        y: {
+          min: 0,
+          ticks: {
+            color: textClr,
+            font: { family: 'Barlow', size: 12 },
+            callback: v => v + ' kW',
+          },
+          grid:   { color: gridClr },
+          border: { color: gridClr },
+        },
+        soc: {
+          position: 'right',
+          min: 0,
+          max: 100,
+          ticks: {
+            color: '#60a5fa',
+            font: { family: 'Barlow', size: 12 },
+            callback: v => v + ' %',
+          },
+          grid:   { display: false },
+          border: { color: gridClr },
+        },
+      },
+    },
+  });
+}
+
+function renderChartClimate(raw) {
+  const canvas = document.getElementById('chart-climate');
+  if (!canvas) return;
+
+  const style    = getComputedStyle(document.documentElement);
+  const gridClr  = style.getPropertyValue('--border').trim();
+  const textClr  = style.getPropertyValue('--text-warm').trim();
+  const bgCard   = style.getPropertyValue('--bg-card').trim();
+  const textMain = style.getPropertyValue('--text').trim();
+
+  const entries = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
+  const labels  = entries.map(([t]) => t);
+
+  if (chartClimate) chartClimate.destroy();
+
+  chartClimate = new Chart(canvas.getContext('2d'), {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'line', label: 'Outdoor',
+          data: entries.map(([, v]) => v.temperature_out ?? null),
+          borderColor: '#fb923c', backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
+        },
+        {
+          type: 'line', label: 'Indoor',
+          data: entries.map(([, v]) => v.temperature_in ?? null),
+          borderColor: '#60a5fa', backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
+        },
+        {
+          type: 'line', label: 'Humidity',
+          data: entries.map(([, v]) => v.humidity_in ?? null),
+          borderColor: '#a78bfa', backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'hum',
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: textClr, font: { family: 'Barlow', size: 13 }, boxWidth: 12, padding: 16 } },
+        tooltip: {
+          backgroundColor: bgCard, borderColor: gridClr, borderWidth: 0.5,
+          titleColor: textMain, bodyColor: textClr,
+          titleFont: { family: 'Barlow Semi Condensed', size: 14, weight: '500' },
+          bodyFont: { family: 'Barlow', size: 13 },
+          padding: 12, cornerRadius: 12, boxWidth: 10, boxHeight: 10, caretSize: 5,
+          callbacks: {
+            label(ctx) {
+              if (ctx.dataset.yAxisID === 'hum') return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 0)} %`;
+              return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 1)} °C`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: textClr, font: { family: 'Barlow', size: 12 }, maxTicksLimit: 9, maxRotation: 0 },
+          grid: { color: gridClr }, border: { color: gridClr },
+        },
+        y: {
+          ticks: { color: textClr, font: { family: 'Barlow', size: 12 }, callback: v => v + ' °C' },
+          grid: { color: gridClr }, border: { color: gridClr },
+        },
+        hum: {
+          position: 'right', min: 0, max: 100,
+          ticks: { color: '#a78bfa', font: { family: 'Barlow', size: 12 }, callback: v => v + ' %' },
+          grid: { display: false }, border: { color: gridClr },
+        },
+      },
+    },
+  });
+}
+
+function renderChartNetwork(raw) {
+  const canvas = document.getElementById('chart-network');
+  if (!canvas) return;
+
+  const style    = getComputedStyle(document.documentElement);
+  const gridClr  = style.getPropertyValue('--border').trim();
+  const textClr  = style.getPropertyValue('--text-warm').trim();
+  const bgCard   = style.getPropertyValue('--bg-card').trim();
+  const textMain = style.getPropertyValue('--text').trim();
+
+  const entries = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
+  const labels  = entries.map(([t]) => t);
+
+  if (chartNetwork) chartNetwork.destroy();
+
+  chartNetwork = new Chart(canvas.getContext('2d'), {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'line', label: 'Download',
+          data: entries.map(([, v]) => v.download_mbps ?? null),
+          borderColor: '#4ade80', backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 3, tension: 0.3, spanGaps: true, yAxisID: 'y',
+        },
+        {
+          type: 'line', label: 'Ping',
+          data: entries.map(([, v]) => v.ping_ms ?? null),
+          borderColor: '#fb923c', backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 3, tension: 0.3, spanGaps: true, yAxisID: 'ping',
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: textClr, font: { family: 'Barlow', size: 13 }, boxWidth: 12, padding: 16 } },
+        tooltip: {
+          backgroundColor: bgCard, borderColor: gridClr, borderWidth: 0.5,
+          titleColor: textMain, bodyColor: textClr,
+          titleFont: { family: 'Barlow Semi Condensed', size: 14, weight: '500' },
+          bodyFont: { family: 'Barlow', size: 13 },
+          padding: 12, cornerRadius: 12, boxWidth: 10, boxHeight: 10, caretSize: 5,
+          callbacks: {
+            label(ctx) {
+              if (ctx.dataset.yAxisID === 'ping') return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 0)} ms`;
+              return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 1)} Mbps`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: textClr, font: { family: 'Barlow', size: 12 }, maxTicksLimit: 9, maxRotation: 0 },
+          grid: { color: gridClr }, border: { color: gridClr },
+        },
+        y: {
+          min: 0,
+          ticks: { color: textClr, font: { family: 'Barlow', size: 12 }, callback: v => v + ' Mbps' },
+          grid: { color: gridClr }, border: { color: gridClr },
+        },
+        ping: {
+          position: 'right', min: 0,
+          ticks: { color: '#fb923c', font: { family: 'Barlow', size: 12 }, callback: v => v + ' ms' },
+          grid: { display: false }, border: { color: gridClr },
+        },
+      },
+    },
   });
 }
 
@@ -314,10 +615,20 @@ function subscribeTotals() {
   onValue(ref(db, `/totals/daily/${today}`), (snap) => {
     const d = snap.val();
     if (!d) return;
-    set('today-gen',  fmt(d.generation_kwh,  1) + ' kWh');
-    set('today-cons', fmt(d.consumption_kwh, 1) + ' kWh');
+    set('today-gen',       fmt(d.generation_kwh,  1) + ' kWh');
+    set('today-peak-gen',  d.peak_generation_kw  != null ? fmt(d.peak_generation_kw,  2) + ' kW' : '—');
+    set('today-cons',      fmt(d.consumption_kwh, 1) + ' kWh');
+    set('today-peak-cons', d.peak_consumption_kw != null ? fmt(d.peak_consumption_kw, 2) + ' kW' : '—');
     set('today-imp',  fmt(d.grid_import_kwh, 2) + ' kWh');
     set('today-exp',  fmt(d.grid_export_kwh, 2) + ' kWh');
+    set('clim-peak-temp-in',  d.peak_temperature_in  != null ? fmt(d.peak_temperature_in,  1) + ' °C' : '—');
+    set('clim-peak-temp-out', d.peak_temperature_out != null ? fmt(d.peak_temperature_out, 1) + ' °C' : '—');
+    set('clim-peak-hum',      d.peak_humidity_in     != null ? fmt(d.peak_humidity_in,     0) + ' %'  : '—');
+    set('net-peak-dl',        d.peak_download_mbps   != null ? fmt(d.peak_download_mbps,   1) + ' Mbps' : '—');
+    const autonomy = d.consumption_kwh > 0
+      ? Math.min(100, Math.max(0, (1 - d.grid_import_kwh / d.consumption_kwh) * 100))
+      : null;
+    set('today-autonomy', autonomy != null ? fmt(autonomy, 1) + ' %' : '—');
     const costEl = document.getElementById('today-cost');
     if (costEl) {
       const v = (d.grid_import_kwh || 0) * PRICE_IMPORT_KWH
@@ -345,13 +656,16 @@ function renderHistory(monthly, daily) {
     const key = date.slice(0, 7); // YYYY-MM
     if (!byMonth[key]) {
       byMonth[key] = { generation_kwh: 0, consumption_kwh: 0,
-                       grid_import_kwh: 0, grid_export_kwh: 0, cost_eur: 0 };
+                       grid_import_kwh: 0, grid_export_kwh: 0, cost_eur: 0,
+                       peak_day_generation_kwh: 0, peak_day_consumption_kwh: 0 };
     }
     byMonth[key].generation_kwh  = (byMonth[key].generation_kwh  || 0) + (vals.generation_kwh  || 0);
     byMonth[key].consumption_kwh = (byMonth[key].consumption_kwh || 0) + (vals.consumption_kwh || 0);
     byMonth[key].grid_import_kwh = (byMonth[key].grid_import_kwh || 0) + (vals.grid_import_kwh || 0);
     byMonth[key].grid_export_kwh = (byMonth[key].grid_export_kwh || 0) + (vals.grid_export_kwh || 0);
     byMonth[key].cost_eur        = (byMonth[key].cost_eur        || 0) + (vals.cost_eur        || 0);
+    byMonth[key].peak_day_generation_kwh  = Math.max(byMonth[key].peak_day_generation_kwh  || 0, vals.generation_kwh  || 0);
+    byMonth[key].peak_day_consumption_kwh = Math.max(byMonth[key].peak_day_consumption_kwh || 0, vals.consumption_kwh || 0);
   });
 
   const list = document.getElementById('history-list');
@@ -367,18 +681,27 @@ function renderHistory(monthly, daily) {
                        - (t.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
       const costClass  = cost <= 0 ? 'cost-pos' : 'cost-neg';
       const costStr    = (cost < 0 ? '−' : '') + fmt(Math.abs(cost), 2) + ' €';
+      const autonomy   = t.consumption_kwh > 0
+        ? Math.min(100, Math.max(0, (1 - (t.grid_import_kwh || 0) / t.consumption_kwh) * 100))
+        : null;
+      const autonomyStr = autonomy != null ? fmt(autonomy, 1) + ' %' : '—';
       const card       = document.createElement('div');
       card.className   = 'month-card';
+      const peakGen  = t.peak_day_generation_kwh  > 0 ? fmt(t.peak_day_generation_kwh,  1) + ' kWh' : '—';
+      const peakCons = t.peak_day_consumption_kwh > 0 ? fmt(t.peak_day_consumption_kwh, 1) + ' kWh' : '—';
       card.innerHTML   = `
         <div class="month-title">${monthName}</div>
         <div class="sys-grid">
           <div class="sys-col">
             <div class="month-row"><span>Total Generation</span><b>${fmt(t.generation_kwh,  1)} kWh</b></div>
+            <div class="month-row"><span>Peak Generation</span><b>${peakGen}</b></div>
             <div class="month-row"><span>Total Consumption</span><b>${fmt(t.consumption_kwh, 1)} kWh</b></div>
+            <div class="month-row"><span>Peak Consumption</span><b>${peakCons}</b></div>
           </div>
           <div class="sys-col">
             <div class="month-row"><span>From Grid</span><b>${fmt(t.grid_import_kwh, 1)} kWh</b></div>
             <div class="month-row"><span>To Grid</span><b>${fmt(t.grid_export_kwh,  1)} kWh</b></div>
+            <div class="month-row"><span>Autonomy</span><b>${autonomyStr}</b></div>
             <div class="month-row"><span>Energy Cost</span><b class="${costClass}">${costStr}</b></div>
           </div>
         </div>
