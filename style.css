@@ -561,8 +561,14 @@ html.light .tab-bar {
   transition: background .2s, color .2s;
 }
 .tab.active {
-  background: var(--text-sand);
+  background: rgba(110, 96, 84, 0.45);
   color: #f0ece8;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+html.light .tab.active {
+  background: rgba(154, 136, 120, 0.40);
+  color: var(--text);
 }
 .tab:not(.active):hover {
   color: var(--text);
@@ -613,6 +619,12 @@ html.light .tab-bar {
   display: flex;
   gap: 6px;
   align-items: center;
+}
+
+/* ── 24 h chart ────────────────────────────────────────────── */
+.chart-wrap {
+  height: 200px;
+  position: relative;
 }
 
 /* ── Responsive ────────────────────────────────────────────── */
