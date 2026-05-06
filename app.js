@@ -311,6 +311,8 @@ function subscribeNetwork() {
 }
 
 /* ── 24 h history chart ──────────────────────────────────── */
+const mob = () => window.innerWidth <= 600;
+
 let chart24h        = null;
 let chartClimate    = null;
 let chartNetwork    = null;
@@ -335,6 +337,7 @@ function renderChart24h(raw) {
   const textClr = style.getPropertyValue('--text-warm').trim();
   const bgCard  = style.getPropertyValue('--bg-card').trim();
   const textMain = style.getPropertyValue('--text').trim();
+  const m = mob();
 
   const entries  = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
   const labels   = entries.map(([t]) => t);
@@ -349,15 +352,16 @@ function renderChart24h(raw) {
       labels,
       datasets: [
         {
-          type: 'bar',
+          type: 'line',
           label: 'Generation',
           data: genData,
-          backgroundColor: 'rgba(74, 222, 128, 0.30)',
           borderColor: '#4ade80',
-          borderWidth: 1,
-          borderRadius: 2,
+          backgroundColor: 'transparent',
+          borderWidth: 1.5,
+          pointRadius: 0,
+          tension: 0.3,
           yAxisID: 'y',
-          order: 2,
+          order: 1,
         },
         {
           type: 'line',
@@ -373,7 +377,7 @@ function renderChart24h(raw) {
         },
         {
           type: 'line',
-          label: 'Battery SOC',
+          label: 'Battery',
           data: socData,
           borderColor: '#60a5fa',
           backgroundColor: 'transparent',
@@ -393,9 +397,12 @@ function renderChart24h(raw) {
         legend: {
           labels: {
             color: textClr,
-            font: { family: 'Barlow', size: 13 },
-            boxWidth: 12,
-            padding: 16,
+            font: { family: 'Barlow', size: m ? 11 : 13 },
+            usePointStyle: true,
+            pointStyle: 'circle',
+            boxWidth: 8,
+            boxHeight: 8,
+            padding: m ? 10 : 16,
           },
         },
         tooltip: {
@@ -424,8 +431,8 @@ function renderChart24h(raw) {
         x: {
           ticks: {
             color: textClr,
-            font: { family: 'Barlow', size: 12 },
-            maxTicksLimit: 9,
+            font: { family: 'Barlow', size: m ? 11 : 12 },
+            maxTicksLimit: m ? 6 : 9,
             maxRotation: 0,
           },
           grid:   { color: gridClr },
@@ -435,7 +442,7 @@ function renderChart24h(raw) {
           min: 0,
           ticks: {
             color: textClr,
-            font: { family: 'Barlow', size: 12 },
+            font: { family: 'Barlow', size: m ? 11 : 12 },
             callback: v => v + ' kW',
           },
           grid:   { color: gridClr },
@@ -447,7 +454,7 @@ function renderChart24h(raw) {
           max: 100,
           ticks: {
             color: '#60a5fa',
-            font: { family: 'Barlow', size: 12 },
+            font: { family: 'Barlow', size: m ? 11 : 12 },
             callback: v => v + ' %',
           },
           grid:   { display: false },
@@ -468,6 +475,7 @@ function renderChartClimate(raw) {
   const bgCard   = style.getPropertyValue('--bg-card').trim();
   const textMain = style.getPropertyValue('--text').trim();
 
+  const m = mob();
   const entries = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
   const labels  = entries.map(([t]) => t);
 
@@ -501,7 +509,7 @@ function renderChartClimate(raw) {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { labels: { color: textClr, font: { family: 'Barlow', size: 13 }, boxWidth: 12, padding: 16 } },
+        legend: { labels: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 13 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: m ? 10 : 16 } },
         tooltip: {
           backgroundColor: bgCard, borderColor: gridClr, borderWidth: 0.5,
           titleColor: textMain, bodyColor: textClr,
@@ -518,16 +526,16 @@ function renderChartClimate(raw) {
       },
       scales: {
         x: {
-          ticks: { color: textClr, font: { family: 'Barlow', size: 12 }, maxTicksLimit: 9, maxRotation: 0 },
+          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, maxTicksLimit: m ? 6 : 9, maxRotation: 0 },
           grid: { color: gridClr }, border: { color: gridClr },
         },
         y: {
-          ticks: { color: textClr, font: { family: 'Barlow', size: 12 }, callback: v => v + ' °C' },
+          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: v => v + ' °C' },
           grid: { color: gridClr }, border: { color: gridClr },
         },
         hum: {
           position: 'right', min: 0, max: 100,
-          ticks: { color: '#a78bfa', font: { family: 'Barlow', size: 12 }, callback: v => v + ' %' },
+          ticks: { color: '#a78bfa', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: v => v + ' %' },
           grid: { display: false }, border: { color: gridClr },
         },
       },
@@ -545,6 +553,7 @@ function renderChartNetwork(raw) {
   const bgCard   = style.getPropertyValue('--bg-card').trim();
   const textMain = style.getPropertyValue('--text').trim();
 
+  const m = mob();
   const entries = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
   const labels  = entries.map(([t]) => t);
 
@@ -558,13 +567,13 @@ function renderChartNetwork(raw) {
           type: 'line', label: 'Download',
           data: entries.map(([, v]) => v.download_mbps ?? null),
           borderColor: '#4ade80', backgroundColor: 'transparent',
-          borderWidth: 1.5, pointRadius: 3, tension: 0.3, spanGaps: true, yAxisID: 'y',
+          borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
         },
         {
           type: 'line', label: 'Ping',
           data: entries.map(([, v]) => v.ping_ms ?? null),
           borderColor: '#fb923c', backgroundColor: 'transparent',
-          borderWidth: 1.5, pointRadius: 3, tension: 0.3, spanGaps: true, yAxisID: 'ping',
+          borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'ping',
         },
       ],
     },
@@ -572,7 +581,7 @@ function renderChartNetwork(raw) {
       responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: { labels: { color: textClr, font: { family: 'Barlow', size: 13 }, boxWidth: 12, padding: 16 } },
+        legend: { labels: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 13 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: m ? 10 : 16 } },
         tooltip: {
           backgroundColor: bgCard, borderColor: gridClr, borderWidth: 0.5,
           titleColor: textMain, bodyColor: textClr,
@@ -589,17 +598,17 @@ function renderChartNetwork(raw) {
       },
       scales: {
         x: {
-          ticks: { color: textClr, font: { family: 'Barlow', size: 12 }, maxTicksLimit: 9, maxRotation: 0 },
+          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, maxTicksLimit: m ? 6 : 9, maxRotation: 0 },
           grid: { color: gridClr }, border: { color: gridClr },
         },
         y: {
           min: 0,
-          ticks: { color: textClr, font: { family: 'Barlow', size: 12 }, callback: v => v + ' Mbps' },
+          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: v => v + ' Mbps' },
           grid: { color: gridClr }, border: { color: gridClr },
         },
         ping: {
           position: 'right', min: 0,
-          ticks: { color: '#fb923c', font: { family: 'Barlow', size: 12 }, callback: v => v + ' ms' },
+          ticks: { color: '#fb923c', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: v => v + ' ms' },
           grid: { display: false }, border: { color: gridClr },
         },
       },
@@ -731,6 +740,127 @@ function fmt(val, decimals) {
   });
 }
 
+/* ── Card overlay ────────────────────────────────────────── */
+let genieParams = null;
+
+function openCardOverlay(cardCls) {
+  const g     = id => document.getElementById(id)?.textContent?.trim() || '—';
+  const val   = v  => `<span class="overlay-val">${v}</span>`;
+  const badge = id => {
+    const el = document.getElementById(id);
+    if (!el) return '<span class="overlay-val">—</span>';
+    const clone = el.cloneNode(true);
+    clone.removeAttribute('id');
+    return clone.outerHTML;
+  };
+  const cost = id => {
+    const el = document.getElementById(id);
+    if (!el) return '<span class="overlay-val">—</span>';
+    const cls = el.classList.contains('cost-pos') ? ' cost-pos'
+              : el.classList.contains('cost-neg') ? ' cost-neg' : '';
+    return `<span class="overlay-val${cls}">${el.textContent.trim()}</span>`;
+  };
+
+  const configs = {
+    'card-tl': {
+      icon: '☀️', title: 'Generation',
+      rows: [
+        ['Self usage',       val(g('gen-autonomy'))],
+        ['Total Generation', val(g('today-gen'))],
+        ['Peak Generation',  val(g('today-peak-gen'))],
+        ['Lifetime total',   val(g('sys-e-total'))],
+      ],
+    },
+    'card-tr': {
+      icon: document.getElementById('wx-icon')?.textContent || '⛅', title: 'Weather',
+      rows: [
+        ['Outdoor Temp',    val(g('wx-temp'))],
+        ['Indoor Temp',     val(g('clim-temp'))],
+        ['Humidity',        val(g('clim-hum'))],
+        ['Peak Temp',       val(g('clim-peak-temp-out'))],
+        ['Peak Humidity',   val(g('clim-peak-hum'))],
+      ],
+    },
+    'card-bl': {
+      icon: '🔋', title: 'Battery',
+      rows: [
+        ['Power',            val(g('bat-kw'))],
+        ['Battery mode',     badge('sys-bat-mode')],
+        ['Battery standby',  badge('sys-bat-standby')],
+        ['Backup mode',      badge('sys-backup')],
+        ['Autonomy',         val(g('sys-autonomy'))],
+        ['Self usage',       val(g('sys-self'))],
+      ],
+    },
+    'card-br': {
+      icon: '⚡', title: 'Consumption',
+      rows: [
+        ['Grid',        val(g('grid-net'))],
+        ['From Grid',   val(g('today-imp'))],
+        ['To Grid',     val(g('today-exp'))],
+        ['Autonomy',    val(g('today-autonomy'))],
+        ['Energy Cost', cost('today-cost')],
+      ],
+    },
+  };
+
+  const cfg = configs[cardCls];
+  if (!cfg) return;
+
+  document.getElementById('ov-icon').textContent  = cfg.icon;
+  document.getElementById('ov-title').textContent = cfg.title;
+  document.getElementById('ov-rows').innerHTML = cfg.rows
+    .map(([key, valHtml]) =>
+      `<div class="overlay-row"><span class="overlay-key">${key}</span>${valHtml}</div>`)
+    .join('');
+
+  const overlay  = document.getElementById('card-overlay');
+  const scene    = document.querySelector('.scene');
+  const card     = document.querySelector('.' + cardCls);
+  const sRect    = scene.getBoundingClientRect();
+  const cRect    = card.getBoundingClientRect();
+
+  const dx = (cRect.left + cRect.width  / 2) - (sRect.left + sRect.width  / 2);
+  const dy = (cRect.top  + cRect.height / 2) - (sRect.top  + sRect.height / 2);
+  const sx = cRect.width  / overlay.offsetWidth;
+  const sy = cRect.height / overlay.offsetHeight;
+  genieParams = { dx, dy, sx, sy };
+
+  // snap to card state, no transition
+  overlay.style.transition = 'none';
+  overlay.style.transform  = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${sx}, ${sy})`;
+  overlay.style.opacity    = '0.3';
+
+  scene.classList.add('overlay-open');
+  void overlay.offsetWidth; // force reflow before transition starts
+
+  // spring to centre
+  overlay.style.transition = 'opacity 0.22s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1)';
+  overlay.style.transform  = 'translate(-50%, -50%) scale(1)';
+  overlay.style.opacity    = '1';
+}
+
+function closeCardOverlay() {
+  const overlay = document.getElementById('card-overlay');
+  const scene   = document.querySelector('.scene');
+  if (!genieParams) { scene.classList.remove('overlay-open'); return; }
+
+  const { dx, dy, sx, sy } = genieParams;
+
+  overlay.style.transition = 'opacity 0.22s ease, transform 0.38s cubic-bezier(0.4, 0, 1, 0.8)';
+  overlay.style.transform  = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${sx}, ${sy})`;
+  overlay.style.opacity    = '0';
+
+  scene.classList.remove('overlay-open'); // cards fade in immediately
+
+  setTimeout(() => {
+    overlay.style.transition = '';
+    overlay.style.transform  = '';
+    overlay.style.opacity    = '';
+    genieParams = null;
+  }, 400);
+}
+
 /* ── Wire events ─────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('login-btn')
@@ -739,6 +869,34 @@ document.addEventListener('DOMContentLoaded', () => {
     .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('password-input')
     .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  function spawnRipple(card, e) {
+    const rect = card.getBoundingClientRect();
+    const size = Math.hypot(rect.width, rect.height) * 2;
+    const r    = document.createElement('span');
+    r.className   = 'card-ripple';
+    r.style.width = r.style.height = size + 'px';
+    r.style.left  = (e.clientX - rect.left - size / 2) + 'px';
+    r.style.top   = (e.clientY - rect.top  - size / 2) + 'px';
+    card.appendChild(r);
+    r.addEventListener('animationend', () => r.remove(), { once: true });
+  }
+
+  ['card-tl', 'card-tr', 'card-bl', 'card-br'].forEach(cls => {
+    const card = document.querySelector('.' + cls);
+    card?.addEventListener('click', e => {
+      e.stopPropagation();
+      spawnRipple(card, e);
+      openCardOverlay(cls);
+    });
+  });
+  document.querySelector('.scene').addEventListener('click', e => {
+    if (document.querySelector('.scene').classList.contains('overlay-open') &&
+        !e.target.closest('#card-overlay')) {
+      closeCardOverlay();
+    }
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCardOverlay(); });
 
   document.getElementById('tab-bar').addEventListener('click', e => {
     const btn = e.target.closest('.tab');
