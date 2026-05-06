@@ -1,5 +1,6 @@
 serviceAccount.json
 preview_overlay.html
 proj.md
+fetch_live.py
 .DS_Store
 .claude/
