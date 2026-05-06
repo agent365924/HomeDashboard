@@ -317,6 +317,8 @@ html.light .card {
 }
 
 /* ── System status ─────────────────────────────────────────── */
+.sys-card:has(.chart-wrap) { padding-top: 2px; padding-bottom: 10px; }
+
 .sys-card {
   background: rgba(255, 255, 255, 0.08);
   border: 0.5px solid var(--border);
@@ -551,13 +553,14 @@ html.light .tab-bar {
 .tab {
   flex: 1;
   border: none;
+  overflow: hidden;
   background: transparent;
   color: var(--text-muted);
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-size: 17px;
   font-weight: 500;
   letter-spacing: 1px;
-  padding: 10px 8px;
+  padding: 8px 8px;
   border-radius: 12px;
   cursor: pointer;
   transition: background .2s, color .2s;
@@ -743,10 +746,11 @@ html.light .card-overlay {
   .scene-status { display: none; }
   .tab { font-size: 15px; letter-spacing: 0.5px; }
 
-  /* charts — taller on mobile so plot area isn't cramped by legend/ticks */
-  .chart-wrap { height: 240px; }
+  /* charts */
+  .chart-wrap { height: 200px; }
+  .sys-card:has(.chart-wrap) { padding-left: 8px; padding-right: 8px; }
 
-  .card-overlay { width: 44vw; height: auto; }
+  .card-overlay { width: 59vw; height: auto; }
   .overlay-title { font-size: 18px; }
 
   /* info bar mobile */

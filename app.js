@@ -443,7 +443,7 @@ function renderChart24h(raw) {
           ticks: {
             color: textClr,
             font: { family: 'Barlow', size: m ? 11 : 12 },
-            callback: v => v + ' kW',
+            callback: (v, i) => m ? (i === 0 ? v + ' kW' : v) : v + ' kW',
           },
           grid:   { color: gridClr },
           border: { color: gridClr },
@@ -455,7 +455,7 @@ function renderChart24h(raw) {
           ticks: {
             color: '#60a5fa',
             font: { family: 'Barlow', size: m ? 11 : 12 },
-            callback: v => v + ' %',
+            callback: (v, i) => m ? (i === 0 ? v + ' %' : v) : v + ' %',
           },
           grid:   { display: false },
           border: { color: gridClr },
@@ -530,12 +530,12 @@ function renderChartClimate(raw) {
           grid: { color: gridClr }, border: { color: gridClr },
         },
         y: {
-          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: v => v + ' °C' },
+          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' °C' : v) : v + ' °C' },
           grid: { color: gridClr }, border: { color: gridClr },
         },
         hum: {
           position: 'right', min: 0, max: 100,
-          ticks: { color: '#a78bfa', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: v => v + ' %' },
+          ticks: { color: '#a78bfa', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' %' : v) : v + ' %' },
           grid: { display: false }, border: { color: gridClr },
         },
       },
@@ -603,12 +603,12 @@ function renderChartNetwork(raw) {
         },
         y: {
           min: 0,
-          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: v => v + ' Mbps' },
+          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' Mbps' : v) : v + ' Mbps' },
           grid: { color: gridClr }, border: { color: gridClr },
         },
         ping: {
           position: 'right', min: 0,
-          ticks: { color: '#fb923c', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: v => v + ' ms' },
+          ticks: { color: '#fb923c', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' ms' : v) : v + ' ms' },
           grid: { display: false }, border: { color: gridClr },
         },
       },
@@ -890,6 +890,11 @@ document.addEventListener('DOMContentLoaded', () => {
       openCardOverlay(cls);
     });
   });
+  document.getElementById('card-overlay').addEventListener('click', e => {
+    spawnRipple(document.getElementById('card-overlay'), e);
+    closeCardOverlay();
+  });
+
   document.querySelector('.scene').addEventListener('click', e => {
     if (document.querySelector('.scene').classList.contains('overlay-open') &&
         !e.target.closest('#card-overlay')) {
@@ -897,6 +902,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCardOverlay(); });
+
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', e => spawnRipple(tab, e));
+  });
 
   document.getElementById('tab-bar').addEventListener('click', e => {
     const btn = e.target.closest('.tab');
