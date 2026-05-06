@@ -92,6 +92,17 @@
       <div class="card-row"><span>Grid</span><b id="grid-net">— kW</b></div>
     </div>
 
+    <!-- Card detail overlay -->
+    <div class="card-overlay" id="card-overlay">
+      <div class="overlay-header">
+        <div class="overlay-title-group">
+          <span class="overlay-icon" id="ov-icon"></span>
+          <span class="overlay-title" id="ov-title"></span>
+        </div>
+      </div>
+      <div id="ov-rows"></div>
+    </div>
+
     <!-- Sensor status pills -->
     <div class="scene-status">
       <div class="scene-pill">
@@ -143,6 +154,15 @@
   <div class="panel active" id="panel-energy">
 
     <div class="section">
+      <div class="section-label">24 H</div>
+      <div class="sys-card">
+        <div class="chart-wrap">
+          <canvas id="chart-24h"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
       <div class="section-label">Today</div>
       <div class="sys-card">
         <div class="sys-grid">
@@ -182,15 +202,6 @@
               <span class="sys-val" id="today-cost">—</span>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-label">24 H</div>
-      <div class="sys-card">
-        <div class="chart-wrap">
-          <canvas id="chart-24h"></canvas>
         </div>
       </div>
     </div>
@@ -250,6 +261,15 @@
   <div class="panel" id="panel-climate">
 
     <div class="section">
+      <div class="section-label">24 H</div>
+      <div class="sys-card">
+        <div class="chart-wrap">
+          <canvas id="chart-climate"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
       <div class="section-label">Climate</div>
       <div class="sys-card">
         <div class="sys-grid">
@@ -289,19 +309,19 @@
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-label">24 H</div>
-      <div class="sys-card">
-        <div class="chart-wrap">
-          <canvas id="chart-climate"></canvas>
-        </div>
-      </div>
-    </div>
-
   </div><!-- /panel-climate -->
 
   <!-- ── Panel: Network ─────────────────────────────────────── -->
   <div class="panel" id="panel-network">
+
+    <div class="section">
+      <div class="section-label">24 H</div>
+      <div class="sys-card">
+        <div class="chart-wrap">
+          <canvas id="chart-network"></canvas>
+        </div>
+      </div>
+    </div>
 
     <div class="section">
       <div class="section-label">Network</div>
@@ -327,15 +347,6 @@
               <span class="sys-val" id="net-ts">—</span>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-label">24 H</div>
-      <div class="sys-card">
-        <div class="chart-wrap">
-          <canvas id="chart-network"></canvas>
         </div>
       </div>
     </div>

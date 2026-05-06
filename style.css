@@ -6,6 +6,7 @@
 
 /* ── Variables: dark (default) ─────────────────────────────── */
 :root {
+  --ripple: rgba(255, 255, 255, 0.08);
   --bg:           #0d1117;
   --bg-card:      #161b25;
   --bg-hover:     #1e2330;
@@ -40,6 +41,7 @@
 
 /* ── Variables: light ──────────────────────────────────────── */
 html.light {
+  --ripple: rgba(0, 0, 0, 0.05);
   --bg:           #f5f4f0;
   --bg-card:      #ffffff;
   --bg-hover:     #f0ede8;
@@ -627,6 +629,86 @@ html.light .tab.active {
   position: relative;
 }
 
+/* ── Card detail overlay ───────────────────────────────────── */
+.card {
+  cursor: pointer;
+  overflow: hidden;
+  transition: background .3s, border-color .3s, opacity 0.22s ease, transform 0.2s ease;
+}
+.card:hover { transform: scale(1.03); }
+
+.card-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--ripple);
+  transform: scale(0);
+  pointer-events: none;
+  animation: card-ripple 0.7s ease-out forwards;
+}
+
+@keyframes card-ripple {
+  to { transform: scale(1); opacity: 0; }
+}
+
+.card-overlay {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  width: 420px;
+  height: 320px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 16px 18px;
+  backdrop-filter: blur(48px);
+  -webkit-backdrop-filter: blur(48px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+}
+
+html.light .card-overlay {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.scene.overlay-open .card-overlay {
+  pointer-events: all;
+}
+
+.scene.overlay-open .card {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.overlay-title-group { display: flex; align-items: center; gap: 8px; }
+.overlay-icon { font-size: 22px; line-height: 1; }
+.overlay-title {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: var(--text);
+}
+
+.overlay-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--border-sub);
+  font-size: 13px;
+}
+.overlay-row:last-child { border-bottom: none; }
+.overlay-key { color: var(--text-warm); font-weight: 400; letter-spacing: 0.03em; }
+.overlay-val { font-weight: 500; color: var(--text); letter-spacing: 0.02em; }
+
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .app { padding: 0 12px 48px; }
@@ -660,6 +742,12 @@ html.light .tab.active {
 
   .scene-status { display: none; }
   .tab { font-size: 15px; letter-spacing: 0.5px; }
+
+  /* charts — taller on mobile so plot area isn't cramped by legend/ticks */
+  .chart-wrap { height: 240px; }
+
+  .card-overlay { width: 44vw; height: auto; }
+  .overlay-title { font-size: 18px; }
 
   /* info bar mobile */
   .info-bar { gap: 4px; margin-top: -6px; }
