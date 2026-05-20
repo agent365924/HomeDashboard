@@ -712,6 +712,58 @@ html.light .card-overlay {
 .overlay-key { color: var(--text-warm); font-weight: 400; letter-spacing: 0.03em; }
 .overlay-val { font-weight: 500; color: var(--text); letter-spacing: 0.02em; }
 
+/* ── Day stepper ───────────────────────────────────────────── */
+.day-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.stepper-btn {
+  background: none;
+  border: 0.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-warm);
+  font-size: 20px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+  font-family: 'Barlow', sans-serif;
+}
+.stepper-btn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.stepper-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+.stepper-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--text-sand);
+  font-weight: 400;
+}
+.day-divider {
+  border-top: 0.5px solid var(--border-sub);
+  margin: 12px 0;
+}
+.chart-no-data {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .app { padding: 0 12px 48px; }

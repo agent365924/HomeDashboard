@@ -131,8 +131,13 @@
       </div>
       <div class="info-pipe"></div>
       <div class="info-item info-item-net">
-        <span class="info-label">Download</span>
+        <span class="info-label">Down</span>
         <span class="info-val" id="info-dl">—</span>
+      </div>
+      <div class="info-divider"></div>
+      <div class="info-item info-item-net">
+        <span class="info-label">Up</span>
+        <span class="info-val" id="info-up">—</span>
       </div>
       <div class="info-divider"></div>
       <div class="info-item info-item-net">
@@ -154,17 +159,17 @@
   <div class="panel active" id="panel-energy">
 
     <div class="section">
-      <div class="section-label">24 H</div>
+      <div class="day-stepper">
+        <button class="stepper-btn" id="day-prev">‹</button>
+        <span class="stepper-label" id="day-label">Today</span>
+        <button class="stepper-btn" id="day-next">›</button>
+      </div>
       <div class="sys-card">
-        <div class="chart-wrap">
+        <div class="chart-wrap" id="chart-wrap-24h">
           <canvas id="chart-24h"></canvas>
         </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-label">Today</div>
-      <div class="sys-card">
+        <div class="chart-no-data hidden" id="chart-no-data">No chart data available</div>
+        <div class="day-divider"></div>
         <div class="sys-grid">
           <div class="sys-col">
             <div class="sys-row">
@@ -172,30 +177,30 @@
               <span class="sys-val" id="today-gen">—</span>
             </div>
             <div class="sys-row">
+              <span class="sys-key">To Grid</span>
+              <span class="sys-val" id="today-exp">—</span>
+            </div>
+            <div class="sys-row">
               <span class="sys-key">Peak Generation</span>
               <span class="sys-val" id="today-peak-gen">—</span>
             </div>
+            <div class="sys-row">
+              <span class="sys-key">Autonomy</span>
+              <span class="sys-val" id="today-autonomy">—</span>
+            </div>
+          </div>
+          <div class="sys-col">
             <div class="sys-row">
               <span class="sys-key">Total Consumption</span>
               <span class="sys-val" id="today-cons">—</span>
             </div>
             <div class="sys-row">
-              <span class="sys-key">Peak Consumption</span>
-              <span class="sys-val" id="today-peak-cons">—</span>
-            </div>
-          </div>
-          <div class="sys-col">
-            <div class="sys-row">
               <span class="sys-key">From Grid</span>
               <span class="sys-val" id="today-imp">—</span>
             </div>
             <div class="sys-row">
-              <span class="sys-key">To Grid</span>
-              <span class="sys-val" id="today-exp">—</span>
-            </div>
-            <div class="sys-row">
-              <span class="sys-key">Autonomy</span>
-              <span class="sys-val" id="today-autonomy">—</span>
+              <span class="sys-key">Peak Consumption</span>
+              <span class="sys-val" id="today-peak-cons">—</span>
             </div>
             <div class="sys-row">
               <span class="sys-key">Energy Cost</span>
@@ -329,11 +334,11 @@
         <div class="sys-grid">
           <div class="sys-col">
             <div class="sys-row">
-              <span class="sys-key">Download</span>
+              <span class="sys-key">Down</span>
               <span class="sys-val" id="net-dl">—</span>
             </div>
             <div class="sys-row">
-              <span class="sys-key">Peak Download</span>
+              <span class="sys-key">Peak Down</span>
               <span class="sys-val" id="net-peak-dl">—</span>
             </div>
             <div class="sys-row">
@@ -342,6 +347,14 @@
             </div>
           </div>
           <div class="sys-col">
+            <div class="sys-row">
+              <span class="sys-key">Up</span>
+              <span class="sys-val" id="net-up">—</span>
+            </div>
+            <div class="sys-row">
+              <span class="sys-key">Peak Up</span>
+              <span class="sys-val" id="net-peak-up">—</span>
+            </div>
             <div class="sys-row">
               <span class="sys-key">Last test</span>
               <span class="sys-val" id="net-ts">—</span>

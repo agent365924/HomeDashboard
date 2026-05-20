@@ -67,8 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const isLight = document.documentElement.classList.toggle('light');
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
     updateHouseImage();
+    if (Object.keys(lastEnergyData).length) {
+      renderChart24h(lastEnergyData);
+    }
     if (Object.keys(lastHistoryData).length) {
-      renderChart24h(lastHistoryData);
       renderChartClimate(lastHistoryData);
       renderChartNetwork(lastHistoryData);
     }
@@ -154,6 +156,7 @@ function init() {
   subscribeNetwork();
   subscribeTotals();
   subscribeHistory();
+  subscribeDayView();
 }
 
 /* ── Live data ───────────────────────────────────────────── */
@@ -276,15 +279,13 @@ function renderSecurityPanel(sensors) {
     .filter(k => sensors[k])
     .map(k => {
       const s = sensors[k];
-      const onlineClass = s.online ? 'badge-ok'   : 'badge-warn';
-      const onlineText  = s.online ? 'online'      : 'offline';
-      const alarmClass  = s.alarm  ? 'badge-warn'  : 'badge-off';
-      const alarmText   = s.alarm  ? 'ALARM'        : 'ok';
+      const onlineClass = s.online ? 'badge-ok'  : 'badge-warn';
+      const onlineText  = s.online ? 'online'     : 'offline';
       return `<div class="sys-row">
         <span class="sys-key">${s.name}</span>
         <div class="sensor-badges">
           <span class="badge ${onlineClass}">${onlineText}</span>
-          <span class="badge ${alarmClass}">${alarmText}</span>
+          ${s.alarm ? '<span class="badge badge-warn">ALARM</span>' : ''}
         </div>
       </div>`;
     });
@@ -298,8 +299,10 @@ function subscribeNetwork() {
     const d = snap.val();
     if (!d) return;
     set('info-dl',   d.download_mbps != null ? fmt(d.download_mbps, 0) : '—');
+    set('info-up',   d.upload_mbps   != null ? fmt(d.upload_mbps,   0) : '—');
     set('info-ping', d.ping_ms       != null ? fmt(d.ping_ms,       0) : '—');
     set('net-dl',    d.download_mbps != null ? fmt(d.download_mbps, 0) + ' Mbps' : '—');
+    set('net-up',    d.upload_mbps   != null ? fmt(d.upload_mbps,   0) + ' Mbps' : '—');
     set('net-ping',  d.ping_ms       != null ? fmt(d.ping_ms,       0) + ' ms'   : '—');
     if (d.timestamp) {
       const ts = new Date(d.timestamp * 1000);
@@ -316,13 +319,16 @@ const mob = () => window.innerWidth <= 600;
 let chart24h        = null;
 let chartClimate    = null;
 let chartNetwork    = null;
-let lastHistoryData = {};
+let lastHistoryData = {};  // climate + network (always today)
+let lastEnergyData  = {};  // energy chart (follows selectedDate)
+let selectedDate    = new Date().toISOString().slice(0, 10);
+let unsubEnergy     = null;
+let unsubDaily      = null;
 
 function subscribeHistory() {
   const today = new Date().toISOString().slice(0, 10);
   onValue(ref(db, `/history/${today}`), (snap) => {
     lastHistoryData = snap.val() || {};
-    renderChart24h(lastHistoryData);
     renderChartClimate(lastHistoryData);
     renderChartNetwork(lastHistoryData);
   });
@@ -355,7 +361,7 @@ function renderChart24h(raw) {
           type: 'line',
           label: 'Generation',
           data: genData,
-          borderColor: '#4ade80',
+          borderColor: '#facc15',
           backgroundColor: 'transparent',
           borderWidth: 1.5,
           pointRadius: 0,
@@ -379,7 +385,7 @@ function renderChart24h(raw) {
           type: 'line',
           label: 'Battery',
           data: socData,
-          borderColor: '#60a5fa',
+          borderColor: '#22c55e',
           backgroundColor: 'transparent',
           borderWidth: 1.5,
           pointRadius: 0,
@@ -453,7 +459,7 @@ function renderChart24h(raw) {
           min: 0,
           max: 100,
           ticks: {
-            color: '#60a5fa',
+            color: '#22c55e',
             font: { family: 'Barlow', size: m ? 11 : 12 },
             callback: (v, i) => m ? (i === 0 ? v + ' %' : v) : v + ' %',
           },
@@ -488,13 +494,13 @@ function renderChartClimate(raw) {
         {
           type: 'line', label: 'Outdoor',
           data: entries.map(([, v]) => v.temperature_out ?? null),
-          borderColor: '#fb923c', backgroundColor: 'transparent',
+          borderColor: '#facc15', backgroundColor: 'transparent',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
         },
         {
           type: 'line', label: 'Indoor',
           data: entries.map(([, v]) => v.temperature_in ?? null),
-          borderColor: '#60a5fa', backgroundColor: 'transparent',
+          borderColor: '#22c55e', backgroundColor: 'transparent',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
         },
         {
@@ -530,7 +536,10 @@ function renderChartClimate(raw) {
           grid: { color: gridClr }, border: { color: gridClr },
         },
         y: {
-          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' °C' : v) : v + ' °C' },
+          ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => {
+            const f = Number(v).toLocaleString('de-DE', { maximumFractionDigits: 2 });
+            return m ? (i === 0 ? f + ' °C' : f) : f + ' °C';
+          }},
           grid: { color: gridClr }, border: { color: gridClr },
         },
         hum: {
@@ -564,9 +573,15 @@ function renderChartNetwork(raw) {
       labels,
       datasets: [
         {
-          type: 'line', label: 'Download',
+          type: 'line', label: 'Down',
           data: entries.map(([, v]) => v.download_mbps ?? null),
           borderColor: '#4ade80', backgroundColor: 'transparent',
+          borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
+        },
+        {
+          type: 'line', label: 'Up',
+          data: entries.map(([, v]) => v.upload_mbps ?? null),
+          borderColor: '#60a5fa', backgroundColor: 'transparent',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
         },
         {
@@ -616,37 +631,99 @@ function renderChartNetwork(raw) {
   });
 }
 
-/* ── Totals ──────────────────────────────────────────────── */
-function subscribeTotals() {
-  const today = new Date().toISOString().slice(0, 10);
-
-  // today's running totals
-  onValue(ref(db, `/totals/daily/${today}`), (snap) => {
-    const d = snap.val();
-    if (!d) return;
-    set('today-gen',       fmt(d.generation_kwh,  1) + ' kWh');
-    set('today-peak-gen',  d.peak_generation_kw  != null ? fmt(d.peak_generation_kw,  2) + ' kW' : '—');
-    set('today-cons',      fmt(d.consumption_kwh, 1) + ' kWh');
-    set('today-peak-cons', d.peak_consumption_kw != null ? fmt(d.peak_consumption_kw, 2) + ' kW' : '—');
-    set('today-imp',  fmt(d.grid_import_kwh, 2) + ' kWh');
-    set('today-exp',  fmt(d.grid_export_kwh, 2) + ' kWh');
-    set('clim-peak-temp-in',  d.peak_temperature_in  != null ? fmt(d.peak_temperature_in,  1) + ' °C' : '—');
-    set('clim-peak-temp-out', d.peak_temperature_out != null ? fmt(d.peak_temperature_out, 1) + ' °C' : '—');
-    set('clim-peak-hum',      d.peak_humidity_in     != null ? fmt(d.peak_humidity_in,     0) + ' %'  : '—');
-    set('net-peak-dl',        d.peak_download_mbps   != null ? fmt(d.peak_download_mbps,   1) + ' Mbps' : '—');
-    const autonomy = d.consumption_kwh > 0
-      ? Math.min(100, Math.max(0, (1 - d.grid_import_kwh / d.consumption_kwh) * 100))
-      : null;
-    set('today-autonomy', autonomy != null ? fmt(autonomy, 1) + ' %' : '—');
+/* ── Daily stats ─────────────────────────────────────────── */
+function renderDailyStats(d) {
+  if (!d) {
+    ['today-gen','today-peak-gen','today-cons','today-peak-cons',
+     'today-imp','today-exp','today-autonomy',
+     'clim-peak-temp-in','clim-peak-temp-out','clim-peak-hum',
+     'net-peak-dl','net-peak-up'].forEach(id => set(id, '—'));
     const costEl = document.getElementById('today-cost');
-    if (costEl) {
-      const v = (d.grid_import_kwh || 0) * PRICE_IMPORT_KWH
-              - (d.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
-      costEl.textContent = (v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' €';
-      costEl.className   = 'sys-val ' + (v <= 0 ? 'cost-pos' : 'cost-neg');
+    if (costEl) { costEl.textContent = '—'; costEl.className = 'sys-val'; }
+    return;
+  }
+  set('today-gen',       fmt(d.generation_kwh,  1) + ' kWh');
+  set('today-peak-gen',  d.peak_generation_kw  != null ? fmt(d.peak_generation_kw,  2) + ' kW' : '—');
+  set('today-cons',      fmt(d.consumption_kwh, 1) + ' kWh');
+  set('today-peak-cons', d.peak_consumption_kw != null ? fmt(d.peak_consumption_kw, 2) + ' kW' : '—');
+  set('today-imp',  fmt(d.grid_import_kwh, 2) + ' kWh');
+  set('today-exp',  fmt(d.grid_export_kwh, 2) + ' kWh');
+  set('clim-peak-temp-in',  d.peak_temperature_in  != null ? fmt(d.peak_temperature_in,  1) + ' °C' : '—');
+  set('clim-peak-temp-out', d.peak_temperature_out != null ? fmt(d.peak_temperature_out, 1) + ' °C' : '—');
+  set('clim-peak-hum',      d.peak_humidity_in     != null ? fmt(d.peak_humidity_in,     0) + ' %'  : '—');
+  set('net-peak-dl',        d.peak_download_mbps   != null ? fmt(d.peak_download_mbps,   1) + ' Mbps' : '—');
+  set('net-peak-up',        d.peak_upload_mbps     != null ? fmt(d.peak_upload_mbps,     1) + ' Mbps' : '—');
+  const autonomy = d.consumption_kwh > 0
+    ? Math.min(100, Math.max(0, (1 - d.grid_import_kwh / d.consumption_kwh) * 100))
+    : null;
+  set('today-autonomy', autonomy != null ? fmt(autonomy, 1) + ' %' : '—');
+  const costEl = document.getElementById('today-cost');
+  if (costEl) {
+    const v = (d.grid_import_kwh || 0) * PRICE_IMPORT_KWH
+            - (d.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
+    costEl.textContent = (v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' €';
+    costEl.className   = 'sys-val ' + (v <= 0 ? 'cost-pos' : 'cost-neg');
+  }
+}
+
+/* ── Day navigation ──────────────────────────────────────── */
+function updateStepperUI() {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isToday  = selectedDate === todayStr;
+  const label    = document.getElementById('day-label');
+  const btnNext  = document.getElementById('day-next');
+  const btnPrev  = document.getElementById('day-prev');
+  if (!label) return;
+  label.textContent = isToday
+    ? 'Today'
+    : new Date(selectedDate + 'T12:00:00').toLocaleDateString('de-DE', {
+        weekday: 'short', day: 'numeric', month: 'short',
+      });
+  btnNext.disabled = isToday;
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() - 31);
+  btnPrev.disabled = new Date(selectedDate + 'T12:00:00') <= minDate;
+}
+
+function subscribeDayView() {
+  updateStepperUI();
+
+  if (unsubEnergy) { unsubEnergy(); unsubEnergy = null; }
+  unsubEnergy = onValue(ref(db, `/history/${selectedDate}`), (snap) => {
+    lastEnergyData  = snap.val() || {};
+    const hasData   = Object.keys(lastEnergyData).length > 0;
+    const chartWrap = document.getElementById('chart-wrap-24h');
+    const noData    = document.getElementById('chart-no-data');
+    if (chartWrap) chartWrap.classList.toggle('hidden', !hasData);
+    if (noData)    noData.classList.toggle('hidden', hasData);
+    if (hasData) {
+      renderChart24h(lastEnergyData);
+    } else {
+      if (chart24h) { chart24h.destroy(); chart24h = null; }
     }
   });
 
+  if (unsubDaily) { unsubDaily(); unsubDaily = null; }
+  unsubDaily = onValue(ref(db, `/totals/daily/${selectedDate}`), (snap) => {
+    renderDailyStats(snap.val());
+  });
+}
+
+function stepDay(delta) {
+  const d = new Date(selectedDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  const newDateStr = d.toISOString().slice(0, 10);
+  const todayStr   = new Date().toISOString().slice(0, 10);
+  if (newDateStr > todayStr) return;
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() - 31);
+  if (d < minDate) return;
+  selectedDate = newDateStr;
+  subscribeDayView();
+}
+
+/* ── Totals ──────────────────────────────────────────────── */
+function subscribeTotals() {
   // monthly history — combine /totals/monthly + current month from /totals/daily
   onValue(ref(db, '/totals/monthly'), (snap) => {
     const monthly = snap.val() || {};
@@ -795,6 +872,7 @@ function openCardOverlay(cardCls) {
     'card-br': {
       icon: '⚡', title: 'Consumption',
       rows: [
+        ['Total Consumption', val(g('today-cons'))],
         ['Grid',        val(g('grid-net'))],
         ['From Grid',   val(g('today-imp'))],
         ['To Grid',     val(g('today-exp'))],
@@ -865,6 +943,8 @@ function closeCardOverlay() {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('login-btn')
     .addEventListener('click', doLogin);
+  document.getElementById('day-prev').addEventListener('click', () => stepDay(-1));
+  document.getElementById('day-next').addEventListener('click', () => stepDay(1));
   document.getElementById('email-input')
     .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('password-input')
