@@ -162,7 +162,10 @@
       <div class="day-stepper">
         <button class="stepper-btn" id="day-prev">‹</button>
         <span class="stepper-label" id="day-label">Today</span>
-        <button class="stepper-btn" id="day-next">›</button>
+        <div class="stepper-right">
+          <button class="stepper-today" id="day-today" disabled>Today</button>
+          <button class="stepper-btn" id="day-next" disabled>›</button>
+        </div>
       </div>
       <div class="sys-card">
         <div class="chart-wrap" id="chart-wrap-24h">
@@ -212,7 +215,14 @@
     </div>
 
     <div class="section">
-      <div class="section-label">Monthly overview</div>
+      <div class="day-stepper">
+        <button class="stepper-btn" id="month-prev">‹</button>
+        <span class="stepper-label" id="month-label">This Month</span>
+        <div class="stepper-right">
+          <button class="stepper-today" id="month-today" disabled>Now</button>
+          <button class="stepper-btn" id="month-next" disabled>›</button>
+        </div>
+      </div>
       <div id="history-list">
         <div class="month-card">
           <div class="month-skeleton"></div>
@@ -266,11 +276,19 @@
   <div class="panel" id="panel-climate">
 
     <div class="section">
-      <div class="section-label">24 H</div>
+      <div class="day-stepper">
+        <button class="stepper-btn" id="day-c-prev">‹</button>
+        <span class="stepper-label" id="day-c-label">Today</span>
+        <div class="stepper-right">
+          <button class="stepper-today" id="day-c-today" disabled>Today</button>
+          <button class="stepper-btn" id="day-c-next" disabled>›</button>
+        </div>
+      </div>
       <div class="sys-card">
-        <div class="chart-wrap">
+        <div class="chart-wrap" id="chart-wrap-climate">
           <canvas id="chart-climate"></canvas>
         </div>
+        <div class="chart-no-data hidden" id="chart-no-data-climate">No chart data available</div>
       </div>
     </div>
 
@@ -320,11 +338,19 @@
   <div class="panel" id="panel-network">
 
     <div class="section">
-      <div class="section-label">24 H</div>
+      <div class="day-stepper">
+        <button class="stepper-btn" id="day-n-prev">‹</button>
+        <span class="stepper-label" id="day-n-label">Today</span>
+        <div class="stepper-right">
+          <button class="stepper-today" id="day-n-today" disabled>Today</button>
+          <button class="stepper-btn" id="day-n-next" disabled>›</button>
+        </div>
+      </div>
       <div class="sys-card">
-        <div class="chart-wrap">
+        <div class="chart-wrap" id="chart-wrap-network">
           <canvas id="chart-network"></canvas>
         </div>
+        <div class="chart-no-data hidden" id="chart-no-data-network">No chart data available</div>
       </div>
     </div>
 

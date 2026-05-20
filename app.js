@@ -67,10 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const isLight = document.documentElement.classList.toggle('light');
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
     updateHouseImage();
-    if (Object.keys(lastEnergyData).length) {
-      renderChart24h(lastEnergyData);
-    }
     if (Object.keys(lastHistoryData).length) {
+      renderChart24h(lastHistoryData);
       renderChartClimate(lastHistoryData);
       renderChartNetwork(lastHistoryData);
     }
@@ -154,9 +152,8 @@ function init() {
   subscribeLive();
   subscribeSensors();
   subscribeNetwork();
-  subscribeTotals();
-  subscribeHistory();
   subscribeDayView();
+  subscribeMonthView();
 }
 
 /* ── Live data ───────────────────────────────────────────── */
@@ -319,20 +316,13 @@ const mob = () => window.innerWidth <= 600;
 let chart24h        = null;
 let chartClimate    = null;
 let chartNetwork    = null;
-let lastHistoryData = {};  // climate + network (always today)
-let lastEnergyData  = {};  // energy chart (follows selectedDate)
+let lastHistoryData = {};
 let selectedDate    = new Date().toISOString().slice(0, 10);
+let selectedMonth   = new Date().toISOString().slice(0, 7);
 let unsubEnergy     = null;
 let unsubDaily      = null;
+let unsubMonth      = null;
 
-function subscribeHistory() {
-  const today = new Date().toISOString().slice(0, 10);
-  onValue(ref(db, `/history/${today}`), (snap) => {
-    lastHistoryData = snap.val() || {};
-    renderChartClimate(lastHistoryData);
-    renderChartNetwork(lastHistoryData);
-  });
-}
 
 function renderChart24h(raw) {
   const canvas = document.getElementById('chart-24h');
@@ -670,19 +660,27 @@ function renderDailyStats(d) {
 function updateStepperUI() {
   const todayStr = new Date().toISOString().slice(0, 10);
   const isToday  = selectedDate === todayStr;
-  const label    = document.getElementById('day-label');
-  const btnNext  = document.getElementById('day-next');
-  const btnPrev  = document.getElementById('day-prev');
-  if (!label) return;
-  label.textContent = isToday
+  const minDate  = new Date();
+  minDate.setDate(minDate.getDate() - 30);
+  const atMin    = new Date(selectedDate + 'T12:00:00') <= minDate;
+  const labelTxt = isToday
     ? 'Today'
     : new Date(selectedDate + 'T12:00:00').toLocaleDateString('de-DE', {
         weekday: 'short', day: 'numeric', month: 'short',
       });
-  btnNext.disabled = isToday;
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() - 31);
-  btnPrev.disabled = new Date(selectedDate + 'T12:00:00') <= minDate;
+  for (const p of ['day', 'day-c', 'day-n']) {
+    const label    = document.getElementById(`${p}-label`);
+    const btnNext  = document.getElementById(`${p}-next`);
+    const btnPrev  = document.getElementById(`${p}-prev`);
+    const btnToday = document.getElementById(`${p}-today`);
+    if (!label) continue;
+    label.textContent         = labelTxt;
+    btnNext.disabled          = isToday;
+    btnNext.style.visibility  = isToday ? 'hidden' : '';
+    btnToday.disabled         = isToday;
+    btnToday.style.visibility = isToday ? 'hidden' : '';
+    btnPrev.disabled          = atMin;
+  }
 }
 
 function subscribeDayView() {
@@ -690,16 +688,24 @@ function subscribeDayView() {
 
   if (unsubEnergy) { unsubEnergy(); unsubEnergy = null; }
   unsubEnergy = onValue(ref(db, `/history/${selectedDate}`), (snap) => {
-    lastEnergyData  = snap.val() || {};
-    const hasData   = Object.keys(lastEnergyData).length > 0;
-    const chartWrap = document.getElementById('chart-wrap-24h');
-    const noData    = document.getElementById('chart-no-data');
-    if (chartWrap) chartWrap.classList.toggle('hidden', !hasData);
-    if (noData)    noData.classList.toggle('hidden', hasData);
-    if (hasData) {
-      renderChart24h(lastEnergyData);
-    } else {
-      if (chart24h) { chart24h.destroy(); chart24h = null; }
+    lastHistoryData = snap.val() || {};
+    const hasData   = Object.keys(lastHistoryData).length > 0;
+
+    for (const [wrapId, noDataId, renderFn, chartRef, setRef] of [
+      ['chart-wrap-24h',     'chart-no-data',         renderChart24h,      () => chart24h,      v => { chart24h     = v; }],
+      ['chart-wrap-climate', 'chart-no-data-climate', renderChartClimate,  () => chartClimate,  v => { chartClimate = v; }],
+      ['chart-wrap-network', 'chart-no-data-network', renderChartNetwork,  () => chartNetwork,  v => { chartNetwork = v; }],
+    ]) {
+      const cw = document.getElementById(wrapId);
+      const nd = document.getElementById(noDataId);
+      if (cw) cw.classList.toggle('hidden', !hasData);
+      if (nd) nd.classList.toggle('hidden', hasData);
+      if (hasData) {
+        renderFn(lastHistoryData);
+      } else {
+        const inst = chartRef();
+        if (inst) { inst.destroy(); setRef(null); }
+      }
     }
   });
 
@@ -716,84 +722,117 @@ function stepDay(delta) {
   const todayStr   = new Date().toISOString().slice(0, 10);
   if (newDateStr > todayStr) return;
   const minDate = new Date();
-  minDate.setDate(minDate.getDate() - 31);
+  minDate.setDate(minDate.getDate() - 30);
   if (d < minDate) return;
   selectedDate = newDateStr;
   subscribeDayView();
 }
 
-/* ── Totals ──────────────────────────────────────────────── */
-function subscribeTotals() {
-  // monthly history — combine /totals/monthly + current month from /totals/daily
-  onValue(ref(db, '/totals/monthly'), (snap) => {
-    const monthly = snap.val() || {};
-    onValue(ref(db, '/totals/daily'), (snapD) => {
-      const daily = snapD.val() || {};
-      renderHistory(monthly, daily);
-    }, { onlyOnce: true });
-  });
+/* ── Month navigation ────────────────────────────────────── */
+function aggregateMonthFromDaily(daily, prefix) {
+  const entries = Object.entries(daily).filter(([d]) => d.startsWith(prefix));
+  if (!entries.length) return null;
+  const t = { generation_kwh: 0, consumption_kwh: 0,
+               grid_import_kwh: 0, grid_export_kwh: 0, cost_eur: 0,
+               peak_day_generation_kwh: 0, peak_day_consumption_kwh: 0 };
+  for (const [, v] of entries) {
+    t.generation_kwh  += v.generation_kwh  || 0;
+    t.consumption_kwh += v.consumption_kwh || 0;
+    t.grid_import_kwh += v.grid_import_kwh || 0;
+    t.grid_export_kwh += v.grid_export_kwh || 0;
+    t.cost_eur        += v.cost_eur        || 0;
+    t.peak_day_generation_kwh  = Math.max(t.peak_day_generation_kwh,  v.generation_kwh  || 0);
+    t.peak_day_consumption_kwh = Math.max(t.peak_day_consumption_kwh, v.consumption_kwh || 0);
+  }
+  return t;
 }
 
-function renderHistory(monthly, daily) {
-  // aggregate daily entries by month for current month
-  const byMonth = { ...monthly };
-
-  Object.entries(daily).forEach(([date, vals]) => {
-    const key = date.slice(0, 7); // YYYY-MM
-    if (!byMonth[key]) {
-      byMonth[key] = { generation_kwh: 0, consumption_kwh: 0,
-                       grid_import_kwh: 0, grid_export_kwh: 0, cost_eur: 0,
-                       peak_day_generation_kwh: 0, peak_day_consumption_kwh: 0 };
-    }
-    byMonth[key].generation_kwh  = (byMonth[key].generation_kwh  || 0) + (vals.generation_kwh  || 0);
-    byMonth[key].consumption_kwh = (byMonth[key].consumption_kwh || 0) + (vals.consumption_kwh || 0);
-    byMonth[key].grid_import_kwh = (byMonth[key].grid_import_kwh || 0) + (vals.grid_import_kwh || 0);
-    byMonth[key].grid_export_kwh = (byMonth[key].grid_export_kwh || 0) + (vals.grid_export_kwh || 0);
-    byMonth[key].cost_eur        = (byMonth[key].cost_eur        || 0) + (vals.cost_eur        || 0);
-    byMonth[key].peak_day_generation_kwh  = Math.max(byMonth[key].peak_day_generation_kwh  || 0, vals.generation_kwh  || 0);
-    byMonth[key].peak_day_consumption_kwh = Math.max(byMonth[key].peak_day_consumption_kwh || 0, vals.consumption_kwh || 0);
-  });
-
+function renderMonthCard(monthKey, t) {
   const list = document.getElementById('history-list');
+  if (!list) return;
+  if (!t) {
+    list.innerHTML = '<div class="month-card" style="padding:18px 20px;color:var(--text-muted);font-size:13px;">No data available</div>';
+    return;
+  }
+  const [y, m]      = monthKey.split('-');
+  const monthName   = new Date(+y, +m - 1, 1).toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+  const cost        = (t.grid_import_kwh || 0) * PRICE_IMPORT_KWH - (t.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
+  const costClass   = cost <= 0 ? 'cost-pos' : 'cost-neg';
+  const costStr     = (cost < 0 ? '−' : '') + fmt(Math.abs(cost), 2) + ' €';
+  const autonomy    = t.consumption_kwh > 0 ? Math.min(100, Math.max(0, (1 - (t.grid_import_kwh || 0) / t.consumption_kwh) * 100)) : null;
+  const autonomyStr = autonomy != null ? fmt(autonomy, 1) + ' %' : '—';
+  const peakGen     = (t.peak_day_generation_kwh  || 0) > 0 ? fmt(t.peak_day_generation_kwh,  1) + ' kWh' : '—';
+  const peakCons    = (t.peak_day_consumption_kwh || 0) > 0 ? fmt(t.peak_day_consumption_kwh, 1) + ' kWh' : '—';
   list.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'month-card';
+  card.innerHTML = `
+    <div class="month-title">${monthName}</div>
+    <div class="sys-grid">
+      <div class="sys-col">
+        <div class="month-row"><span>Total Generation</span><b>${fmt(t.generation_kwh,  1)} kWh</b></div>
+        <div class="month-row"><span>Peak Generation</span><b>${peakGen}</b></div>
+        <div class="month-row"><span>Total Consumption</span><b>${fmt(t.consumption_kwh, 1)} kWh</b></div>
+        <div class="month-row"><span>Peak Consumption</span><b>${peakCons}</b></div>
+      </div>
+      <div class="sys-col">
+        <div class="month-row"><span>From Grid</span><b>${fmt(t.grid_import_kwh, 1)} kWh</b></div>
+        <div class="month-row"><span>To Grid</span><b>${fmt(t.grid_export_kwh,  1)} kWh</b></div>
+        <div class="month-row"><span>Autonomy</span><b>${autonomyStr}</b></div>
+        <div class="month-row"><span>Energy Cost</span><b class="${costClass}">${costStr}</b></div>
+      </div>
+    </div>`;
+  list.appendChild(card);
+}
 
-  Object.entries(byMonth)
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .forEach(([key, t]) => {
-      const [y, m]     = key.split('-');
-      const monthName  = new Date(+y, +m - 1, 1)
-        .toLocaleString('de-DE', { month: 'long', year: 'numeric' });
-      const cost       = (t.grid_import_kwh || 0) * PRICE_IMPORT_KWH
-                       - (t.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
-      const costClass  = cost <= 0 ? 'cost-pos' : 'cost-neg';
-      const costStr    = (cost < 0 ? '−' : '') + fmt(Math.abs(cost), 2) + ' €';
-      const autonomy   = t.consumption_kwh > 0
-        ? Math.min(100, Math.max(0, (1 - (t.grid_import_kwh || 0) / t.consumption_kwh) * 100))
-        : null;
-      const autonomyStr = autonomy != null ? fmt(autonomy, 1) + ' %' : '—';
-      const card       = document.createElement('div');
-      card.className   = 'month-card';
-      const peakGen  = t.peak_day_generation_kwh  > 0 ? fmt(t.peak_day_generation_kwh,  1) + ' kWh' : '—';
-      const peakCons = t.peak_day_consumption_kwh > 0 ? fmt(t.peak_day_consumption_kwh, 1) + ' kWh' : '—';
-      card.innerHTML   = `
-        <div class="month-title">${monthName}</div>
-        <div class="sys-grid">
-          <div class="sys-col">
-            <div class="month-row"><span>Total Generation</span><b>${fmt(t.generation_kwh,  1)} kWh</b></div>
-            <div class="month-row"><span>Peak Generation</span><b>${peakGen}</b></div>
-            <div class="month-row"><span>Total Consumption</span><b>${fmt(t.consumption_kwh, 1)} kWh</b></div>
-            <div class="month-row"><span>Peak Consumption</span><b>${peakCons}</b></div>
-          </div>
-          <div class="sys-col">
-            <div class="month-row"><span>From Grid</span><b>${fmt(t.grid_import_kwh, 1)} kWh</b></div>
-            <div class="month-row"><span>To Grid</span><b>${fmt(t.grid_export_kwh,  1)} kWh</b></div>
-            <div class="month-row"><span>Autonomy</span><b>${autonomyStr}</b></div>
-            <div class="month-row"><span>Energy Cost</span><b class="${costClass}">${costStr}</b></div>
-          </div>
-        </div>
-      `;
-      list.appendChild(card);
+function updateMonthStepperUI() {
+  const todayMonth  = new Date().toISOString().slice(0, 7);
+  const isNow       = selectedMonth === todayMonth;
+  const [sy, sm]    = selectedMonth.split('-').map(Number);
+  const [ty, tm]    = todayMonth.split('-').map(Number);
+  const monthsBack  = (ty - sy) * 12 + (tm - sm);
+  const label       = document.getElementById('month-label');
+  const btnNext     = document.getElementById('month-next');
+  const btnPrev     = document.getElementById('month-prev');
+  const btnToday    = document.getElementById('month-today');
+  if (!label) return;
+  label.textContent         = isNow ? 'This Month'
+    : new Date(selectedMonth + '-15').toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
+  btnNext.disabled          = isNow;
+  btnNext.style.visibility  = isNow ? 'hidden' : '';
+  btnToday.disabled         = isNow;
+  btnToday.style.visibility = isNow ? 'hidden' : '';
+  btnPrev.disabled          = monthsBack >= 36;
+}
+
+function subscribeMonthView() {
+  updateMonthStepperUI();
+  if (unsubMonth) { unsubMonth(); unsubMonth = null; }
+  const todayMonth = new Date().toISOString().slice(0, 7);
+  if (selectedMonth === todayMonth) {
+    unsubMonth = onValue(ref(db, '/totals/daily'), (snap) => {
+      renderMonthCard(selectedMonth, aggregateMonthFromDaily(snap.val() || {}, selectedMonth));
     });
+  } else {
+    unsubMonth = onValue(ref(db, `/totals/monthly/${selectedMonth}`), (snap) => {
+      renderMonthCard(selectedMonth, snap.val());
+    });
+  }
+}
+
+function stepMonth(delta) {
+  let [y, m] = selectedMonth.split('-').map(Number);
+  m += delta;
+  if (m > 12) { m -= 12; y++; }
+  if (m < 1)  { m += 12; y--; }
+  const newMonth   = `${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}`;
+  const todayMonth = new Date().toISOString().slice(0, 7);
+  if (newMonth > todayMonth) return;
+  const [ty, tm]   = todayMonth.split('-').map(Number);
+  const monthsBack = (ty - y) * 12 + (tm - m);
+  if (monthsBack > 36) return;
+  selectedMonth = newMonth;
+  subscribeMonthView();
 }
 
 /* ── Utilities ───────────────────────────────────────────── */
@@ -945,6 +984,28 @@ document.addEventListener('DOMContentLoaded', () => {
     .addEventListener('click', doLogin);
   document.getElementById('day-prev').addEventListener('click', () => stepDay(-1));
   document.getElementById('day-next').addEventListener('click', () => stepDay(1));
+  document.getElementById('day-today').addEventListener('click', () => {
+    selectedDate = new Date().toISOString().slice(0, 10);
+    subscribeDayView();
+  });
+  document.getElementById('day-c-prev').addEventListener('click', () => stepDay(-1));
+  document.getElementById('day-c-next').addEventListener('click', () => stepDay(1));
+  document.getElementById('day-c-today').addEventListener('click', () => {
+    selectedDate = new Date().toISOString().slice(0, 10);
+    subscribeDayView();
+  });
+  document.getElementById('day-n-prev').addEventListener('click', () => stepDay(-1));
+  document.getElementById('day-n-next').addEventListener('click', () => stepDay(1));
+  document.getElementById('day-n-today').addEventListener('click', () => {
+    selectedDate = new Date().toISOString().slice(0, 10);
+    subscribeDayView();
+  });
+  document.getElementById('month-prev').addEventListener('click', () => stepMonth(-1));
+  document.getElementById('month-next').addEventListener('click', () => stepMonth(1));
+  document.getElementById('month-today').addEventListener('click', () => {
+    selectedMonth = new Date().toISOString().slice(0, 7);
+    subscribeMonthView();
+  });
   document.getElementById('email-input')
     .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('password-input')
