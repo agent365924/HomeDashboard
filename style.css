@@ -112,7 +112,7 @@ body {
 .subtitle {
   font-size: 13px;
   color: var(--text-warm);
-  margin-top: 4px;
+  margin-top: 0px;
   font-weight: 400;
   letter-spacing: 0.04em;
 }
@@ -830,6 +830,8 @@ html.light .card-overlay {
   /* charts */
   .chart-wrap { height: 200px; }
   .sys-card:has(.chart-wrap) { padding-left: 8px; padding-right: 8px; }
+  .sys-card:has(.chart-wrap) .sys-grid,
+  .sys-card:has(.chart-wrap) .day-divider { padding-left: 12px; padding-right: 12px; }
 
   .card-overlay { width: 59vw; height: auto; }
   .overlay-title { font-size: 18px; }
