@@ -310,6 +310,53 @@ function subscribeNetwork() {
   });
 }
 
+/* ── Chart tooltip ───────────────────────────────────────── */
+let _chartTooltipEl = null;
+
+function getChartTooltipEl() {
+  if (!_chartTooltipEl) {
+    _chartTooltipEl = document.createElement('div');
+    _chartTooltipEl.className = 'chart-tooltip';
+    _chartTooltipEl.style.opacity = '0';
+    document.body.appendChild(_chartTooltipEl);
+  }
+  return _chartTooltipEl;
+}
+
+function makeExternalTooltip(formatters) {
+  return function({ chart, tooltip }) {
+    const el = getChartTooltipEl();
+    if (tooltip.opacity === 0) { el.style.opacity = '0'; return; }
+
+    const title = tooltip.title?.[0] ?? '';
+    const rows  = (tooltip.dataPoints ?? [])
+      .filter(dp => dp.parsed.y != null)
+      .map(dp => {
+        const val = (formatters[dp.dataset.yAxisID] ?? (v => fmt(v, 2)))(dp.parsed.y);
+        return `<div class="chart-tooltip-row">
+          <span class="chart-tooltip-dot" style="background:${dp.dataset.borderColor}"></span>
+          <span class="chart-tooltip-label">${dp.dataset.label}</span>
+          <span class="chart-tooltip-val">${val}</span>
+        </div>`;
+      }).join('');
+
+    el.innerHTML = `<div class="chart-tooltip-title">${title}</div>${rows}`;
+
+    const rect = chart.canvas.getBoundingClientRect();
+    const ew   = el.offsetWidth  || 160;
+    const eh   = el.offsetHeight || 80;
+    let x = rect.left + tooltip.caretX + 14;
+    let y = rect.top  + tooltip.caretY - eh / 2;
+    if (x + ew > window.innerWidth  - 8) x = rect.left + tooltip.caretX - ew - 14;
+    if (y < 8) y = 8;
+    if (y + eh > window.innerHeight - 8) y = window.innerHeight - eh - 8;
+
+    el.style.left    = x + 'px';
+    el.style.top     = y + 'px';
+    el.style.opacity = '1';
+  };
+}
+
 /* ── 24 h history chart ──────────────────────────────────── */
 const mob = () => window.innerWidth <= 600;
 
@@ -328,11 +375,10 @@ function renderChart24h(raw) {
   const canvas = document.getElementById('chart-24h');
   if (!canvas) return;
 
-  const style   = getComputedStyle(document.documentElement);
-  const gridClr = style.getPropertyValue('--border').trim();
-  const textClr = style.getPropertyValue('--text-warm').trim();
-  const bgCard  = style.getPropertyValue('--bg-card').trim();
-  const textMain = style.getPropertyValue('--text').trim();
+  const style        = getComputedStyle(document.documentElement);
+  const gridClr      = style.getPropertyValue('--border').trim();
+  const chartGridClr = style.getPropertyValue('--chart-grid').trim();
+  const textClr      = style.getPropertyValue('--text-warm').trim();
   const m = mob();
 
   const entries  = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
@@ -402,25 +448,11 @@ function renderChart24h(raw) {
           },
         },
         tooltip: {
-          backgroundColor:  bgCard,
-          borderColor:      gridClr,
-          borderWidth:      0.5,
-          titleColor:       textMain,
-          bodyColor:        textClr,
-          titleFont:        { family: 'Barlow Semi Condensed', size: 14, weight: '500' },
-          bodyFont:         { family: 'Barlow', size: 13 },
-          padding:          12,
-          cornerRadius:     12,
-          boxWidth:         10,
-          boxHeight:        10,
-          caretSize:        5,
-          callbacks: {
-            label(ctx) {
-              if (ctx.dataset.yAxisID === 'soc')
-                return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 1)} %`;
-              return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 2)} kW`;
-            },
-          },
+          enabled: false,
+          external: makeExternalTooltip({
+            y:   v => fmt(v, 2) + ' kW',
+            soc: v => fmt(v, 1) + ' %',
+          }),
         },
       },
       scales: {
@@ -431,7 +463,7 @@ function renderChart24h(raw) {
             maxTicksLimit: m ? 6 : 9,
             maxRotation: 0,
           },
-          grid:   { color: gridClr },
+          grid:   { color: chartGridClr },
           border: { color: gridClr },
         },
         y: {
@@ -441,7 +473,7 @@ function renderChart24h(raw) {
             font: { family: 'Barlow', size: m ? 11 : 12 },
             callback: (v, i) => m ? (i === 0 ? v + ' kW' : v) : v + ' kW',
           },
-          grid:   { color: gridClr },
+          grid:   { color: chartGridClr },
           border: { color: gridClr },
         },
         soc: {
@@ -465,11 +497,10 @@ function renderChartClimate(raw) {
   const canvas = document.getElementById('chart-climate');
   if (!canvas) return;
 
-  const style    = getComputedStyle(document.documentElement);
-  const gridClr  = style.getPropertyValue('--border').trim();
-  const textClr  = style.getPropertyValue('--text-warm').trim();
-  const bgCard   = style.getPropertyValue('--bg-card').trim();
-  const textMain = style.getPropertyValue('--text').trim();
+  const style        = getComputedStyle(document.documentElement);
+  const gridClr      = style.getPropertyValue('--border').trim();
+  const chartGridClr = style.getPropertyValue('--chart-grid').trim();
+  const textClr      = style.getPropertyValue('--text-warm').trim();
 
   const m = mob();
   const entries = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
@@ -507,30 +538,24 @@ function renderChartClimate(raw) {
       plugins: {
         legend: { labels: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 13 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: m ? 10 : 16 } },
         tooltip: {
-          backgroundColor: bgCard, borderColor: gridClr, borderWidth: 0.5,
-          titleColor: textMain, bodyColor: textClr,
-          titleFont: { family: 'Barlow Semi Condensed', size: 14, weight: '500' },
-          bodyFont: { family: 'Barlow', size: 13 },
-          padding: 12, cornerRadius: 12, boxWidth: 10, boxHeight: 10, caretSize: 5,
-          callbacks: {
-            label(ctx) {
-              if (ctx.dataset.yAxisID === 'hum') return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 0)} %`;
-              return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 1)} °C`;
-            },
-          },
+          enabled: false,
+          external: makeExternalTooltip({
+            y:   v => fmt(v, 1) + ' °C',
+            hum: v => fmt(v, 0) + ' %',
+          }),
         },
       },
       scales: {
         x: {
           ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, maxTicksLimit: m ? 6 : 9, maxRotation: 0 },
-          grid: { color: gridClr }, border: { color: gridClr },
+          grid: { color: chartGridClr }, border: { color: gridClr },
         },
         y: {
           ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => {
             const f = Number(v).toLocaleString('de-DE', { maximumFractionDigits: 2 });
             return m ? (i === 0 ? f + ' °C' : f) : f + ' °C';
           }},
-          grid: { color: gridClr }, border: { color: gridClr },
+          grid: { color: chartGridClr }, border: { color: gridClr },
         },
         hum: {
           position: 'right', min: 0, max: 100,
@@ -546,11 +571,10 @@ function renderChartNetwork(raw) {
   const canvas = document.getElementById('chart-network');
   if (!canvas) return;
 
-  const style    = getComputedStyle(document.documentElement);
-  const gridClr  = style.getPropertyValue('--border').trim();
-  const textClr  = style.getPropertyValue('--text-warm').trim();
-  const bgCard   = style.getPropertyValue('--bg-card').trim();
-  const textMain = style.getPropertyValue('--text').trim();
+  const style        = getComputedStyle(document.documentElement);
+  const gridClr      = style.getPropertyValue('--border').trim();
+  const chartGridClr = style.getPropertyValue('--chart-grid').trim();
+  const textClr      = style.getPropertyValue('--text-warm').trim();
 
   const m = mob();
   const entries = Object.entries(raw).sort((a, b) => a[0].localeCompare(b[0]));
@@ -571,13 +595,13 @@ function renderChartNetwork(raw) {
         {
           type: 'line', label: 'Up',
           data: entries.map(([, v]) => v.upload_mbps ?? null),
-          borderColor: '#60a5fa', backgroundColor: 'transparent',
+          borderColor: '#fb923c', backgroundColor: 'transparent',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
         },
         {
           type: 'line', label: 'Ping',
           data: entries.map(([, v]) => v.ping_ms ?? null),
-          borderColor: '#fb923c', backgroundColor: 'transparent',
+          borderColor: '#60a5fa', backgroundColor: 'transparent',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'ping',
         },
       ],
@@ -588,32 +612,26 @@ function renderChartNetwork(raw) {
       plugins: {
         legend: { labels: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 13 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: m ? 10 : 16 } },
         tooltip: {
-          backgroundColor: bgCard, borderColor: gridClr, borderWidth: 0.5,
-          titleColor: textMain, bodyColor: textClr,
-          titleFont: { family: 'Barlow Semi Condensed', size: 14, weight: '500' },
-          bodyFont: { family: 'Barlow', size: 13 },
-          padding: 12, cornerRadius: 12, boxWidth: 10, boxHeight: 10, caretSize: 5,
-          callbacks: {
-            label(ctx) {
-              if (ctx.dataset.yAxisID === 'ping') return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 0)} ms`;
-              return `  ${ctx.dataset.label}: ${fmt(ctx.parsed.y, 1)} Mbps`;
-            },
-          },
+          enabled: false,
+          external: makeExternalTooltip({
+            y:    v => fmt(v, 1) + ' Mbps',
+            ping: v => fmt(v, 0) + ' ms',
+          }),
         },
       },
       scales: {
         x: {
           ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, maxTicksLimit: m ? 6 : 9, maxRotation: 0 },
-          grid: { color: gridClr }, border: { color: gridClr },
+          grid: { color: chartGridClr }, border: { color: gridClr },
         },
         y: {
           min: 0,
           ticks: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' Mbps' : v) : v + ' Mbps' },
-          grid: { color: gridClr }, border: { color: gridClr },
+          grid: { color: chartGridClr }, border: { color: gridClr },
         },
         ping: {
           position: 'right', min: 0,
-          ticks: { color: '#fb923c', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' ms' : v) : v + ' ms' },
+          ticks: { color: '#60a5fa', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' ms' : v) : v + ' ms' },
           grid: { display: false }, border: { color: gridClr },
         },
       },
@@ -1048,6 +1066,10 @@ document.addEventListener('DOMContentLoaded', () => {
     tab.addEventListener('click', e => spawnRipple(tab, e));
   });
 
+  document.querySelectorAll('.stepper-btn, .stepper-today').forEach(btn => {
+    btn.addEventListener('click', e => spawnRipple(btn, e));
+  });
+
   document.getElementById('tab-bar').addEventListener('click', e => {
     const btn = e.target.closest('.tab');
     if (!btn) return;
@@ -1055,5 +1077,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    if (_chartTooltipEl) _chartTooltipEl.style.opacity = '0';
+  });
+
+  document.querySelectorAll('.chart-wrap').forEach(wrap => {
+    wrap.addEventListener('mouseleave', () => {
+      if (_chartTooltipEl) _chartTooltipEl.style.opacity = '0';
+    });
   });
 });

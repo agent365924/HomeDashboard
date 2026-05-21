@@ -32,10 +32,9 @@
   --text-warm:    #8c7d6a;
   --text-sand:    #6e6054;
   --text-sand-lo: #4a4038;
-  --toggle-bg:    #1e1a16;
-  --toggle-border:#363028;
   --toggle-knob:  var(--text-sand);
   --toggle-x:     0px;
+  --chart-grid:   #303030;
   --house-opacity: 0.5;
   --house-blend:   normal;}
 
@@ -67,10 +66,9 @@ html.light {
   --text-warm:    #b8a898;
   --text-sand:    #9a8878;
   --text-sand-lo: #7a6858;
-  --toggle-bg:    #DBCBB7;
-  --toggle-border:#c4b09c;
-  --toggle-knob:  var(--text-sand);
+  --toggle-knob:  #e0d7c6;
   --toggle-x:     16px;
+  --chart-grid:   #dddddd;
   --house-opacity: 0.9;
   --house-blend:  multiply;
 }
@@ -120,7 +118,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-top: 6px;
+  height: 60px;
 }
 
 /* status indicators */
@@ -148,16 +146,21 @@ html.light .status-error { background: #fff7ed; color: #c2410c; }
 }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 
-/* theme toggle — warm amber */
+/* theme toggle */
 .theme-toggle {
   cursor: pointer;
   width: 36px; height: 20px;
   border-radius: 99px;
-  background: var(--toggle-bg);
-  border: 0.5px solid var(--toggle-border);
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
   position: relative;
   transition: background .3s;
   flex-shrink: 0;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+html.light .theme-toggle {
+  background: rgba(255, 255, 255, 0.7);
 }
 .theme-knob {
   position: absolute;
@@ -572,7 +575,7 @@ html.light .tab-bar {
   -webkit-backdrop-filter: blur(8px);
 }
 html.light .tab.active {
-  background: rgba(154, 136, 120, 0.40);
+  background: rgba(180, 160, 112, 0.40);
   color: var(--text);
 }
 .tab:not(.active):hover {
@@ -727,19 +730,16 @@ html.light .card-overlay {
   border-radius: 8px;
   color: var(--text-warm);
   font-size: 20px;
-  line-height: 1;
+  line-height: 0;
   width: 32px;
   height: 32px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background .15s, color .15s;
   font-family: 'Barlow', sans-serif;
-}
-.stepper-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--text);
+  position: relative;
+  overflow: hidden;
 }
 .stepper-btn:disabled {
   opacity: 0.25;
@@ -762,11 +762,8 @@ html.light .card-overlay {
   height: 32px;
   padding: 0 10px;
   cursor: pointer;
-  transition: background .15s, color .15s;
-}
-.stepper-today:hover:not(:disabled) {
-  background: var(--bg-hover);
-  color: var(--text);
+  position: relative;
+  overflow: hidden;
 }
 .stepper-today:disabled {
   opacity: 0.25;
@@ -781,7 +778,7 @@ html.light .card-overlay {
 }
 .day-divider {
   border-top: 0.5px solid var(--border-sub);
-  margin: 12px 0;
+  margin: 8px 0;
 }
 .chart-no-data {
   height: 200px;
@@ -791,6 +788,54 @@ html.light .card-overlay {
   color: var(--text-muted);
   font-size: 13px;
   letter-spacing: 0.04em;
+}
+
+/* ── Chart tooltip ─────────────────────────────────────────── */
+.chart-tooltip {
+  position: fixed;
+  pointer-events: none;
+  z-index: 50;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  min-width: 150px;
+  transition: opacity 0.1s;
+}
+html.light .chart-tooltip {
+  background: rgba(255, 255, 255, 0.7);
+}
+.chart-tooltip-title {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.chart-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+.chart-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.chart-tooltip-label {
+  flex: 1;
+  color: var(--text-warm);
+}
+.chart-tooltip-val {
+  font-weight: 500;
+  color: var(--text);
+  margin-left: 16px;
 }
 
 /* ── Responsive ────────────────────────────────────────────── */
@@ -823,6 +868,7 @@ html.light .card-overlay {
   .sys-col:last-child { padding-left: 0; }
 
   .title { font-size: 28px; }
+  .header-right { height: 42px; }
 
   .scene-status { display: none; }
   .tab { font-size: 15px; letter-spacing: 0.5px; }
