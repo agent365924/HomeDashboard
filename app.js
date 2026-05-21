@@ -1078,7 +1078,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.classList.add('active');
     document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
     if (_chartTooltipEl) _chartTooltipEl.style.opacity = '0';
-    window.scrollTo({ top: 0, behavior: 'instant' });
   });
 
   document.querySelectorAll('.chart-wrap').forEach(wrap => {
