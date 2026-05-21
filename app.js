@@ -1085,4 +1085,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (_chartTooltipEl) _chartTooltipEl.style.opacity = '0';
     });
   });
+
+  document.addEventListener('touchstart', (e) => {
+    if (!e.target.closest('.chart-wrap') && _chartTooltipEl)
+      _chartTooltipEl.style.opacity = '0';
+  }, { passive: true });
+
+  document.addEventListener('touchmove', () => {
+    if (_chartTooltipEl) _chartTooltipEl.style.opacity = '0';
+  }, { passive: true });
 });
