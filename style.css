@@ -293,7 +293,7 @@ html.light .card {
   align-items: flex-end;
   gap: 8px;
   padding: 8px 4px;
-  margin-top: -10px;
+  margin-top: -18px;
 }
 .info-item {
   display: flex;
@@ -917,7 +917,7 @@ html.light .chart-tooltip {
   .overlay-title { font-size: 18px; }
 
   /* info bar mobile */
-  .info-bar { gap: 4px; margin-top: -6px; }
+  .info-bar { gap: 4px; margin-top: -14px; }
   .info-val  { font-size: 24px; }
   .info-label { font-size: 13px; }
   .info-divider { height: 36px; }
