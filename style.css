@@ -880,7 +880,7 @@ html.light .chart-tooltip {
   transform: translateX(56px);
   z-index: 5;
   display: flex;
-  gap: 3px;
+  gap: 0;
   align-items: flex-end;
   pointer-events: none;
 }
@@ -890,6 +890,7 @@ html.light .chart-tooltip {
   align-items: center;
   gap: 5px;
 }
+.waste-bin + .waste-bin { margin-left: -28px; }
 .waste-bin.bin-slot-2 { transform: translateY(-18px); }
 .waste-bin.bin-slot-3 { transform: translateY(-36px); }
 .bin-icon {
