@@ -154,6 +154,20 @@ function init() {
   subscribeNetwork();
   subscribeDayView();
   subscribeMonthView();
+  subscribePresence();
+}
+
+/* ── Presence bubbles ────────────────────────────────────── */
+function subscribePresence() {
+  onValue(ref(db, '/presence'), (snap) => {
+    const data      = snap.val() || {};
+    const container = document.getElementById('presence-bubbles');
+    if (!container) return;
+    container.innerHTML = ['F', 'K']
+      .filter(initial => data[initial]?.present === true)
+      .map(initial => `<div class="presence-bubble">${initial}</div>`)
+      .join('');
+  });
 }
 
 /* ── Live data ───────────────────────────────────────────── */
