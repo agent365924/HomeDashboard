@@ -3,6 +3,7 @@ preview_overlay.html
 proj.md
 fetch_live.py
 fetch_presence.py
+fetch_waste.py
 presence.service
 prd-presence-detection.md
 .DS_Store
