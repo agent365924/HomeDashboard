@@ -578,7 +578,7 @@ html.light .scene-pill {
   border: 0.5px solid var(--border);
   border-radius: 16px;
   padding: 4px;
-  margin-top: 20px;
+  margin-top: 12px;
   gap: 2px;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
