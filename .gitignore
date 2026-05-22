@@ -2,5 +2,8 @@ serviceAccount.json
 preview_overlay.html
 proj.md
 fetch_live.py
+fetch_presence.py
+presence.service
+prd-presence-detection.md
 .DS_Store
 .claude/
