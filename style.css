@@ -915,44 +915,51 @@ html.light .chart-tooltip {
 .lights-btn {
   position: absolute;
   right: 8px;
-  top: 60%;
+  top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.08);
   border: 0.5px solid var(--border);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   cursor: pointer;
-  font-size: 22px;
+  font-size: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background .2s;
+  transition: background .3s, border-color .3s, opacity 0.22s ease, transform 0.2s ease;
   z-index: 10;
+  overflow: hidden;
 }
-.lights-btn:hover { background: rgba(255, 255, 255, 0.16); }
-html.light .lights-btn { background: rgba(255, 255, 255, 0.65); }
+.lights-btn:hover { transform: translateY(-50%) scale(1.12); }
+html.light .lights-btn { background: rgba(255, 255, 255, 0.7); }
 
-.lights-panel {
-  display: none;
-  margin-top: 13px;
-}
-.lights-open .scene { display: none; }
-.lights-open .lights-panel { display: block; }
-
-.lights-card {
+.lights-overlay {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  width: 420px;
+  max-height: calc(100% - 80px);
   background: rgba(255, 255, 255, 0.08);
   border: 0.5px solid var(--border);
   border-radius: 16px;
-  padding: 24px 24px;
-  min-height: 480px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: background .3s, border-color .3s;
+  padding: 16px 18px;
+  backdrop-filter: blur(48px);
+  -webkit-backdrop-filter: blur(48px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
-html.light .lights-card { background: rgba(255, 255, 255, 0.7); }
+html.light .lights-overlay { background: rgba(255, 255, 255, 0.7); }
+
+.scene.lights-overlay-open .lights-overlay { pointer-events: all; }
+.scene.lights-overlay-open .card          { opacity: 0; pointer-events: none; }
+.scene.lights-overlay-open .lights-btn    { opacity: 0; pointer-events: none; }
 
 .lights-header {
   display: flex;
@@ -985,15 +992,30 @@ html.light .lights-card { background: rgba(255, 255, 255, 0.7); }
 }
 .lights-close:hover { background: var(--border); }
 
+.lights-section-label { margin-top: 8px; margin-bottom: 4px; }
+.lights-overlay .lights-header { margin-bottom: 8px; }
+.lights-overlay .lights-room-row { padding: 9px 0; }
+.lights-overlay .lights-rooms { overflow-y: auto; flex: 1; }
+
 .lights-room-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 0;
+  padding: 14px 0;
   border-bottom: 0.5px solid var(--border-sub);
+  cursor: pointer;
+  transition: opacity .15s;
 }
+.lights-room-row:hover { opacity: 0.75; }
 .lights-room-row:last-child { border-bottom: none; }
-.lights-room-unreachable { opacity: 0.35; pointer-events: none; }
+.lights-room-unreachable { color: var(--text-muted); pointer-events: none; cursor: default; }
+
+.lights-room-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
 
 .lights-room-name {
   font-family: 'Barlow Semi Condensed', sans-serif;
@@ -1002,35 +1024,39 @@ html.light .lights-card { background: rgba(255, 255, 255, 0.7); }
   letter-spacing: 0.3px;
 }
 
+.lights-room-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
 .lights-toggle {
   position: relative;
-  width: 48px;
-  height: 28px;
+  width: 36px;
+  height: 20px;
   border-radius: 99px;
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.08);
   border: 0.5px solid var(--border);
-  cursor: pointer;
-  transition: background .2s, border-color .2s;
+  transition: background .3s;
   flex-shrink: 0;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
+html.light .lights-toggle { background: rgba(255, 255, 255, 0.7); }
 .lights-toggle::after {
   content: '';
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: var(--text-sand);
-  transition: transform .2s, background .2s;
-}
-.lights-toggle.active {
-  background: rgba(250, 204, 21, 0.2);
-  border-color: rgba(250, 204, 21, 0.4);
+  background: var(--toggle-knob);
+  transition: transform .3s;
 }
 .lights-toggle.active::after {
-  transform: translateX(20px);
-  background: #facc15;
+  transform: translateX(16px);
 }
 
 .lights-empty {
@@ -1089,8 +1115,8 @@ html.light .lights-card { background: rgba(255, 255, 255, 0.7); }
   .overlay-title { font-size: 18px; }
 
   /* lights */
-  .lights-btn { right: 4px; width: 40px; height: 40px; font-size: 18px; }
-  .lights-card { min-height: 390px; padding: 20px 16px; }
+  .lights-btn { right: 4px; width: 56px; height: 56px; font-size: 26px; }
+  .lights-overlay { width: 59vw; height: auto; }
   .lights-header-title { font-size: 22px; }
   .lights-room-name { font-size: 17px; }
 

@@ -234,29 +234,43 @@ function renderLights(data) {
     el.innerHTML = '<div class="lights-empty">No data</div>';
     return;
   }
-  el.innerHTML = Object.entries(data.rooms)
+
+  const rows = Object.entries(data.rooms)
     .sort(([, a], [, b]) => a.name.localeCompare(b.name))
     .map(([, room]) => {
-      const noLights   = !room.lights || Object.keys(room.lights).length === 0;
-      const isOn       = room.on;
-      const groupId    = room.grouped_light_id;
-      return `<div class="lights-room-row${noLights ? ' lights-room-unreachable' : ''}">
-        <span class="lights-room-name">${room.name}</span>
-        <button class="lights-toggle${isOn ? ' active' : ''}"
-                data-group-id="${groupId}"
-                data-on="${isOn}"
-                ${noLights ? 'disabled' : ''}
-                aria-label="${room.name}"></button>
+      const lightCount  = room.lights ? Object.keys(room.lights).length : 0;
+      const anyReachable = room.any_reachable !== undefined ? room.any_reachable : lightCount > 0;
+      const disabled    = !anyReachable;
+      const isOn        = room.on;
+      const groupId     = room.grouped_light_id;
+      const bri         = room.bri ?? 0;
+      const meta        = lightCount === 0
+        ? 'No lights'
+        : isOn
+          ? `${lightCount} light${lightCount !== 1 ? 's' : ''} · ${bri}%`
+          : `${lightCount} light${lightCount !== 1 ? 's' : ''}`;
+      return `<div class="lights-room-row${disabled ? ' lights-room-unreachable' : ''}"
+              data-group-id="${groupId}" data-on="${isOn}">
+        <div class="lights-room-info">
+          <span class="lights-room-name">${room.name}</span>
+          <span class="lights-room-meta">${meta}</span>
+        </div>
+        <div class="lights-toggle${isOn ? ' active' : ''}" role="switch" aria-checked="${isOn}" aria-label="${room.name}"></div>
       </div>`;
     })
     .join('');
 
-  el.querySelectorAll('.lights-toggle:not([disabled])').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const currentOn = btn.dataset.on === 'true';
-      sendLightCommand('grouped_light', btn.dataset.groupId, { on: { on: !currentOn } });
-      btn.classList.toggle('active', !currentOn);
-      btn.dataset.on = String(!currentOn);
+  el.innerHTML = `<div class="sys-col-single">${rows}</div>`;
+
+  el.querySelectorAll('.lights-room-row:not(.lights-room-unreachable)').forEach(row => {
+    row.addEventListener('click', () => {
+      const currentOn = row.dataset.on === 'true';
+      const newOn = !currentOn;
+      sendLightCommand('grouped_light', row.dataset.groupId, { on: { on: newOn } });
+      row.dataset.on = String(newOn);
+      const toggle = row.querySelector('.lights-toggle');
+      toggle.classList.toggle('active', newOn);
+      toggle.setAttribute('aria-checked', String(newOn));
     });
   });
 }
@@ -266,12 +280,52 @@ function sendLightCommand(type, id, payload) {
   fbSet(ref(db, '/hue/commands/' + cmdId), { type, id, payload, ts: Date.now() });
 }
 
+let lightsGenieParams = null;
+
 function openLightsPanel() {
-  document.getElementById('app').classList.add('lights-open');
+  const overlay = document.getElementById('lights-overlay');
+  const scene   = document.querySelector('.scene');
+  const btn     = document.getElementById('lights-btn');
+  const sRect   = scene.getBoundingClientRect();
+  const bRect   = btn.getBoundingClientRect();
+
+  const dx = (bRect.left + bRect.width  / 2) - (sRect.left + sRect.width  / 2);
+  const dy = (bRect.top  + bRect.height / 2) - (sRect.top  + sRect.height / 2);
+  const sx = bRect.width  / overlay.offsetWidth;
+  const sy = bRect.height / overlay.offsetHeight;
+  lightsGenieParams = { dx, dy, sx, sy };
+
+  overlay.style.transition = 'none';
+  overlay.style.transform  = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${sx}, ${sy})`;
+  overlay.style.opacity    = '0.3';
+
+  scene.classList.add('lights-overlay-open');
+  void overlay.offsetWidth;
+
+  overlay.style.transition = 'opacity 0.22s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1)';
+  overlay.style.transform  = 'translate(-50%, -50%) scale(1)';
+  overlay.style.opacity    = '1';
 }
 
 function closeLightsPanel() {
-  document.getElementById('app').classList.remove('lights-open');
+  const overlay = document.getElementById('lights-overlay');
+  const scene   = document.querySelector('.scene');
+  if (!lightsGenieParams) { scene.classList.remove('lights-overlay-open'); return; }
+
+  const { dx, dy, sx, sy } = lightsGenieParams;
+
+  overlay.style.transition = 'opacity 0.22s ease, transform 0.38s cubic-bezier(0.4, 0, 1, 0.8)';
+  overlay.style.transform  = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${sx}, ${sy})`;
+  overlay.style.opacity    = '0';
+
+  scene.classList.remove('lights-overlay-open');
+
+  setTimeout(() => {
+    overlay.style.transition = '';
+    overlay.style.transform  = '';
+    overlay.style.opacity    = '';
+    lightsGenieParams = null;
+  }, 400);
 }
 
 /* ── Live data ───────────────────────────────────────────── */
@@ -1171,11 +1225,17 @@ document.addEventListener('DOMContentLoaded', () => {
     spawnRipple(document.getElementById('card-overlay'), e);
     closeCardOverlay();
   });
+  document.getElementById('lights-overlay').addEventListener('click', e => {
+    e.stopPropagation();
+  });
 
   document.querySelector('.scene').addEventListener('click', e => {
-    if (document.querySelector('.scene').classList.contains('overlay-open') &&
-        !e.target.closest('#card-overlay')) {
+    const scene = document.querySelector('.scene');
+    if (scene.classList.contains('overlay-open') && !e.target.closest('#card-overlay')) {
       closeCardOverlay();
+    }
+    if (scene.classList.contains('lights-overlay-open') && !e.target.closest('#lights-overlay')) {
+      closeLightsPanel();
     }
   });
   document.addEventListener('keydown', e => {
@@ -1185,8 +1245,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  document.getElementById('lights-btn')?.addEventListener('click', openLightsPanel);
-  document.getElementById('lights-close')?.addEventListener('click', closeLightsPanel);
+  document.getElementById('lights-btn')?.addEventListener('click', e => { e.stopPropagation(); spawnRipple(document.getElementById('lights-btn'), e); openLightsPanel(); });
+  document.getElementById('lights-close')?.addEventListener('click', e => { e.stopPropagation(); closeLightsPanel(); });
 
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', e => spawnRipple(tab, e));

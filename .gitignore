@@ -6,5 +6,8 @@ fetch_presence.py
 fetch_waste.py
 presence.service
 prd-presence-detection.md
+prd-hue-lighting.md
+handoff-hue-next.md
+hue/
 .DS_Store
 .claude/
