@@ -285,7 +285,12 @@ let lightsGenieParams = null;
 function openLightsPanel() {
   const overlay = document.getElementById('lights-overlay');
   const scene   = document.querySelector('.scene');
-  const btn     = document.getElementById('lights-btn');
+
+  if (scene.classList.contains('overlay-open')) {
+    closeCardOverlay();
+  }
+
+  const btn = document.getElementById('lights-btn');
   const sRect   = scene.getBoundingClientRect();
   const bRect   = btn.getBoundingClientRect();
 
