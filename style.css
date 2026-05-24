@@ -911,6 +911,134 @@ html.light .chart-tooltip {
 .bin-date.bin-today    { color: #fb923c; }
 .bin-date.bin-tomorrow { color: #facc15; }
 
+/* ── Lights ────────────────────────────────────────────────── */
+.lights-btn {
+  position: absolute;
+  right: 8px;
+  top: 60%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+  z-index: 10;
+}
+.lights-btn:hover { background: rgba(255, 255, 255, 0.16); }
+html.light .lights-btn { background: rgba(255, 255, 255, 0.65); }
+
+.lights-panel {
+  display: none;
+  margin-top: 13px;
+}
+.lights-open .scene { display: none; }
+.lights-open .lights-panel { display: block; }
+
+.lights-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--border);
+  border-radius: 16px;
+  padding: 24px 24px;
+  min-height: 480px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background .3s, border-color .3s;
+}
+html.light .lights-card { background: rgba(255, 255, 255, 0.7); }
+
+.lights-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.lights-header-icon { font-size: 28px; line-height: 1; }
+.lights-header-title {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  flex: 1;
+}
+.lights-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-hover);
+  border: 0.5px solid var(--border);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+  flex-shrink: 0;
+}
+.lights-close:hover { background: var(--border); }
+
+.lights-room-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 0.5px solid var(--border-sub);
+}
+.lights-room-row:last-child { border-bottom: none; }
+.lights-room-unreachable { opacity: 0.35; pointer-events: none; }
+
+.lights-room-name {
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.lights-toggle {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border-radius: 99px;
+  background: var(--bg-hover);
+  border: 0.5px solid var(--border);
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+  flex-shrink: 0;
+}
+.lights-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text-sand);
+  transition: transform .2s, background .2s;
+}
+.lights-toggle.active {
+  background: rgba(250, 204, 21, 0.2);
+  border-color: rgba(250, 204, 21, 0.4);
+}
+.lights-toggle.active::after {
+  transform: translateX(20px);
+  background: #facc15;
+}
+
+.lights-empty {
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 16px 0;
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .app { padding: 0 12px 48px; }
@@ -959,6 +1087,12 @@ html.light .chart-tooltip {
 
   .card-overlay { width: 59vw; height: auto; }
   .overlay-title { font-size: 18px; }
+
+  /* lights */
+  .lights-btn { right: 4px; width: 40px; height: 40px; font-size: 18px; }
+  .lights-card { min-height: 390px; padding: 20px 16px; }
+  .lights-header-title { font-size: 22px; }
+  .lights-room-name { font-size: 17px; }
 
   /* info bar mobile */
   .info-bar { gap: 4px; margin-top: -14px; }

@@ -5,7 +5,7 @@
 import { initializeApp }               from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword,
          onAuthStateChanged }          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getDatabase, ref, onValue }   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+import { getDatabase, ref, onValue, set as fbSet } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
 /* ── Tariff ──────────────────────────────────────────────── */
 const PRICE_IMPORT_KWH = 0.31;
@@ -156,6 +156,7 @@ function init() {
   subscribeMonthView();
   subscribePresence();
   subscribeWaste();
+  subscribeLights();
 }
 
 /* ── Presence bubbles ────────────────────────────────────── */
@@ -217,6 +218,60 @@ function renderWasteBins(d) {
 
   const container = document.getElementById('waste-bins');
   if (container) container.style.display = anyVisible ? 'flex' : 'none';
+}
+
+/* ── Lights ──────────────────────────────────────────────── */
+function subscribeLights() {
+  onValue(ref(db, '/hue'), (snap) => {
+    renderLights(snap.val());
+  });
+}
+
+function renderLights(data) {
+  const el = document.getElementById('lights-rooms');
+  if (!el) return;
+  if (!data || !data.rooms) {
+    el.innerHTML = '<div class="lights-empty">No data</div>';
+    return;
+  }
+  el.innerHTML = Object.entries(data.rooms)
+    .sort(([, a], [, b]) => a.name.localeCompare(b.name))
+    .map(([, room]) => {
+      const noLights   = !room.lights || Object.keys(room.lights).length === 0;
+      const isOn       = room.on;
+      const groupId    = room.grouped_light_id;
+      return `<div class="lights-room-row${noLights ? ' lights-room-unreachable' : ''}">
+        <span class="lights-room-name">${room.name}</span>
+        <button class="lights-toggle${isOn ? ' active' : ''}"
+                data-group-id="${groupId}"
+                data-on="${isOn}"
+                ${noLights ? 'disabled' : ''}
+                aria-label="${room.name}"></button>
+      </div>`;
+    })
+    .join('');
+
+  el.querySelectorAll('.lights-toggle:not([disabled])').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const currentOn = btn.dataset.on === 'true';
+      sendLightCommand('grouped_light', btn.dataset.groupId, { on: { on: !currentOn } });
+      btn.classList.toggle('active', !currentOn);
+      btn.dataset.on = String(!currentOn);
+    });
+  });
+}
+
+function sendLightCommand(type, id, payload) {
+  const cmdId = `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+  fbSet(ref(db, '/hue/commands/' + cmdId), { type, id, payload, ts: Date.now() });
+}
+
+function openLightsPanel() {
+  document.getElementById('app').classList.add('lights-open');
+}
+
+function closeLightsPanel() {
+  document.getElementById('app').classList.remove('lights-open');
 }
 
 /* ── Live data ───────────────────────────────────────────── */
@@ -1123,7 +1178,15 @@ document.addEventListener('DOMContentLoaded', () => {
       closeCardOverlay();
     }
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCardOverlay(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeCardOverlay();
+      closeLightsPanel();
+    }
+  });
+
+  document.getElementById('lights-btn')?.addEventListener('click', openLightsPanel);
+  document.getElementById('lights-close')?.addEventListener('click', closeLightsPanel);
 
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', e => spawnRipple(tab, e));
