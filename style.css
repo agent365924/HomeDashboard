@@ -1129,6 +1129,8 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
 }
 
 /* ── Lights: back button ────────────────────────────────────── */
+.lights-close-mobile { display: none; }
+
 .lights-back-btn {
   width: 32px;
   height: 32px;
@@ -1335,8 +1337,9 @@ html.light .lights-scene-chip:hover { background: rgba(255,255,255,0.85); }
 
   /* lights */
   .lights-btn { right: 4px; width: 56px; height: 56px; font-size: 26px; }
-  .lights-overlay { width: 59vw; height: auto; }
+  .lights-overlay { width: 79vw; height: auto; }
   .lights-header-title { font-size: 22px; }
+  .lights-close-mobile { display: flex; }
   .lights-room-name { font-size: 17px; }
 
   /* info bar mobile */
