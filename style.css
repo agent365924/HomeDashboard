@@ -997,10 +997,11 @@ html.light .lights-overlay { background: rgba(255, 255, 255, 0.7); }
 }
 .lights-close:hover { background: var(--border); }
 
-.lights-section-label { margin-top: 8px; margin-bottom: 4px; }
-.lights-overlay .lights-header        { margin-bottom: 12px; padding-right: 18px; }
-.lights-overlay .lights-section-label { padding-right: 18px; }
+.lights-section-label { margin-top: 8px; margin-bottom: 2px; }
+.lights-overlay .lights-header        { margin-bottom: 6px; padding-right: 18px; }
+.lights-overlay .lights-section-label { padding-right: 18px; margin-bottom: 0; }
 .lights-overlay .lights-room-row      { padding: 9px 18px 9px 0; }
+.lights-overlay .lights-room-row:first-child { padding-top: 5px; }
 .lights-overlay #lights-room-controls { padding-right: 18px; }
 .lights-overlay .lights-rooms { overflow-y: auto; flex: 1; }
 
@@ -1088,20 +1089,26 @@ html.light .lights-toggle.active::after {
 }
 
 /* ── Lights: custom scrollbar ───────────────────────────────── */
-.lights-rooms {
+.lights-rooms,
+#lights-room-controls {
   scrollbar-width: thin;
   scrollbar-color: #d4c8b8 transparent;
 }
-html.light .lights-rooms {
+html.light .lights-rooms,
+html.light #lights-room-controls {
   scrollbar-color: #7A766C transparent;
 }
-.lights-rooms::-webkit-scrollbar       { width: 4px; }
-.lights-rooms::-webkit-scrollbar-track { background: transparent; }
-.lights-rooms::-webkit-scrollbar-thumb {
+.lights-rooms::-webkit-scrollbar,
+#lights-room-controls::-webkit-scrollbar       { width: 4px; }
+.lights-rooms::-webkit-scrollbar-track,
+#lights-room-controls::-webkit-scrollbar-track { background: transparent; }
+.lights-rooms::-webkit-scrollbar-thumb,
+#lights-room-controls::-webkit-scrollbar-thumb {
   background: #d4c8b8;
   border-radius: 2px;
 }
-html.light .lights-rooms::-webkit-scrollbar-thumb { background: #7A766C; }
+html.light .lights-rooms::-webkit-scrollbar-thumb,
+html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C; }
 
 /* ── Lights: view containers ────────────────────────────────── */
 .lights-views {
