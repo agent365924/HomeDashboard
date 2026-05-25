@@ -1190,7 +1190,7 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
 .lights-bri-slider::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
-  background: rgba(255,255,255,0.14);
+  background: linear-gradient(to right, #8A7868 var(--bri-pct, 0%), rgba(255,255,255,0.14) var(--bri-pct, 0%));
   border: none;
 }
 .lights-bri-slider::-webkit-slider-thumb {
@@ -1209,6 +1209,11 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
   background: rgba(255,255,255,0.14);
   border: none;
 }
+.lights-bri-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: #8A7868;
+}
 .lights-bri-slider::-moz-range-thumb {
   width: 40px;
   height: 40px;
@@ -1217,8 +1222,11 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
   cursor: pointer;
   border: none;
 }
-html.light .lights-bri-slider::-webkit-slider-runnable-track,
+html.light .lights-bri-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(to right, #DFD7C3 var(--bri-pct, 0%), rgba(0,0,0,0.14) var(--bri-pct, 0%));
+}
 html.light .lights-bri-slider::-moz-range-track { background: rgba(0,0,0,0.14); }
+html.light .lights-bri-slider::-moz-range-progress { background: #DFD7C3; }
 html.light .lights-bri-slider::-webkit-slider-thumb { background: radial-gradient(circle 7px at center, #7A766C 99%, transparent 100%); }
 html.light .lights-bri-slider::-moz-range-thumb   { background: radial-gradient(circle 7px at center, #7A766C 99%, transparent 100%); border: none; }
 .lights-bri-val {

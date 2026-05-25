@@ -242,6 +242,7 @@ function renderLights(data) {
     const briVal = document.getElementById('lights-bri-val');
     if (slider && document.activeElement !== slider) {
       slider.value = room.bri || 1;
+      slider.style.setProperty('--bri-pct', (room.bri || 1) + '%');
       if (briVal) briVal.textContent = (room.bri || 0) + '%';
     }
     const swatch     = document.getElementById('lights-color-swatch');
@@ -399,7 +400,9 @@ function openRoomDetail(roomId) {
 
   const slider = document.getElementById('lights-bri-slider');
   const briVal = document.getElementById('lights-bri-val');
+  slider.style.setProperty('--bri-pct', slider.value + '%');
   slider.addEventListener('input', () => {
+    slider.style.setProperty('--bri-pct', slider.value + '%');
     briVal.textContent = slider.value + '%';
     clearTimeout(_briDebounce);
     _briDebounce = setTimeout(() => {
