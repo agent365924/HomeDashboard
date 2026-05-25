@@ -377,7 +377,7 @@ function openRoomDetail(roomId) {
 
   const ctrl = document.getElementById('lights-room-controls');
   ctrl.innerHTML = `
-    <div class="section-label lights-section-label" style="margin-top:8px">Brightness</div>
+    <div class="section-label lights-section-label">Brightness</div>
     <div class="lights-bri-row">
       <input class="lights-bri-slider" id="lights-bri-slider" type="range" min="1" max="100" value="${bri || 1}">
       <span class="lights-bri-val" id="lights-bri-val">${bri}%</span>

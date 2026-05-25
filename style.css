@@ -1000,6 +1000,7 @@ html.light .lights-overlay { background: rgba(255, 255, 255, 0.7); }
 .lights-section-label { margin-top: 8px; margin-bottom: 2px; }
 .lights-overlay .lights-header        { margin-bottom: 6px; padding-right: 18px; }
 .lights-overlay .lights-section-label { padding-right: 18px; margin-bottom: 0; }
+#lights-room-controls .lights-section-label { margin-top: 4px; }
 .lights-overlay .lights-room-row      { padding: 9px 18px 9px 0; }
 .lights-overlay .lights-room-row:first-child { padding-top: 5px; }
 .lights-overlay #lights-room-controls { padding-right: 18px; }
@@ -1175,14 +1176,13 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 0 12px;
+  padding: 4px 0 6px;
 }
 .lights-bri-slider {
   flex: 1;
   -webkit-appearance: none;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(255,255,255,0.14);
+  height: 40px;
+  background: transparent;
   outline: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -1195,13 +1195,13 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
 }
 .lights-bri-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--text);
+  background: radial-gradient(circle 7px at center, var(--text) 99%, transparent 100%);
   cursor: pointer;
   border: none;
-  margin-top: -5px;
+  margin-top: -18px;
 }
 .lights-bri-slider::-moz-range-track {
   height: 4px;
@@ -1210,18 +1210,17 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
   border: none;
 }
 .lights-bri-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: var(--text);
+  background: radial-gradient(circle 7px at center, var(--text) 99%, transparent 100%);
   cursor: pointer;
   border: none;
 }
-html.light .lights-bri-slider,
 html.light .lights-bri-slider::-webkit-slider-runnable-track,
 html.light .lights-bri-slider::-moz-range-track { background: rgba(0,0,0,0.14); }
-html.light .lights-bri-slider::-webkit-slider-thumb { background: #7A766C; }
-html.light .lights-bri-slider::-moz-range-thumb   { background: #7A766C; border: none; }
+html.light .lights-bri-slider::-webkit-slider-thumb { background: radial-gradient(circle 7px at center, #7A766C 99%, transparent 100%); }
+html.light .lights-bri-slider::-moz-range-thumb   { background: radial-gradient(circle 7px at center, #7A766C 99%, transparent 100%); border: none; }
 .lights-bri-val {
   font-size: 13px;
   color: var(--text-warm);
@@ -1234,7 +1233,7 @@ html.light .lights-bri-slider::-moz-range-thumb   { background: #7A766C; border:
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 8px 0 12px;
+  padding: 4px 0 6px;
 }
 .lights-scene-chip {
   padding: 6px 14px;
@@ -1260,7 +1259,7 @@ html.light .lights-scene-chip { background: rgba(255,255,255,0.6); border-color:
 html.light .lights-scene-chip:hover { background: rgba(255,255,255,0.85); }
 
 /* ── Lights: colour picker ──────────────────────────────────── */
-.lights-color-row { padding: 8px 0 12px; }
+.lights-color-row { padding: 4px 0 6px; }
 .lights-color-swatch-label {
   display: flex;
   align-items: center;
