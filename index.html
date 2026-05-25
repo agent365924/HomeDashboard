@@ -139,12 +139,28 @@
 
     <!-- Lights overlay (genie — same as card-overlay) -->
     <div class="lights-overlay" id="lights-overlay">
-      <div class="lights-header">
-        <span class="lights-header-icon">💡</span>
-        <span class="lights-header-title">Lights</span>
+      <div class="lights-views" id="lights-views">
+        <!-- View 1: room list -->
+        <div id="lights-list-view">
+          <div class="lights-header">
+            <span class="lights-header-icon">💡</span>
+            <span class="lights-header-title">Lights</span>
+          </div>
+          <div class="section-label lights-section-label">Rooms</div>
+          <div class="lights-rooms" id="lights-rooms"></div>
+        </div>
+        <!-- View 2: room detail -->
+        <div id="lights-room-view" class="hidden">
+          <div class="lights-header">
+            <button class="lights-back-btn" id="lights-back">&#8249;</button>
+            <span class="lights-header-title" id="lights-room-title"></span>
+            <button class="lights-toggle-btn" id="lights-room-toggle-btn" aria-label="Toggle room">
+              <div class="lights-toggle" id="lights-room-toggle" role="switch" aria-checked="false"></div>
+            </button>
+          </div>
+          <div id="lights-room-controls"></div>
+        </div>
       </div>
-      <div class="section-label lights-section-label">Rooms</div>
-      <div class="lights-rooms" id="lights-rooms"></div>
     </div>
 
   </div>

@@ -228,6 +228,35 @@ function subscribeLights() {
 }
 
 function renderLights(data) {
+  _lastHueData = data;
+
+  if (_activeRoomId && data?.rooms?.[_activeRoomId]) {
+    const room = data.rooms[_activeRoomId];
+    const toggle = document.getElementById('lights-room-toggle');
+    if (toggle) {
+      toggle.classList.toggle('active', room.on);
+      toggle.setAttribute('aria-checked', String(room.on));
+      toggle.dataset.on = String(room.on);
+    }
+    const slider = document.getElementById('lights-bri-slider');
+    const briVal = document.getElementById('lights-bri-val');
+    if (slider && document.activeElement !== slider) {
+      slider.value = room.bri || 1;
+      if (briVal) briVal.textContent = (room.bri || 0) + '%';
+    }
+    const swatch     = document.getElementById('lights-color-swatch');
+    const colorInput = document.getElementById('lights-color-input');
+    if (swatch && colorInput && document.activeElement !== colorInput) {
+      const colorLights = Object.values(room.lights || {}).filter(l => l.color_capable);
+      const src = colorLights.find(l => l.on && l.xy) || colorLights.find(l => l.xy);
+      if (src?.xy) {
+        const hex = xyToHex(src.xy.x, src.xy.y);
+        swatch.style.background = hex;
+        colorInput.value = hex;
+      }
+    }
+  }
+
   const el = document.getElementById('lights-rooms');
   if (!el) return;
   if (!data || !data.rooms) {
@@ -236,26 +265,35 @@ function renderLights(data) {
   }
 
   const rows = Object.entries(data.rooms)
-    .sort(([, a], [, b]) => a.name.localeCompare(b.name))
-    .map(([, room]) => {
-      const lightCount  = room.lights ? Object.keys(room.lights).length : 0;
+    .sort(([, a], [, b]) => {
+      const aR = a.any_reachable !== undefined ? a.any_reachable : true;
+      const bR = b.any_reachable !== undefined ? b.any_reachable : true;
+      if (aR !== bR) return aR ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    })
+    .map(([roomId, room]) => {
+      const lightCount   = room.lights ? Object.keys(room.lights).length : 0;
       const anyReachable = room.any_reachable !== undefined ? room.any_reachable : lightCount > 0;
-      const disabled    = !anyReachable;
-      const isOn        = room.on;
-      const groupId     = room.grouped_light_id;
-      const bri         = room.bri ?? 0;
-      const meta        = lightCount === 0
-        ? 'No lights'
-        : isOn
-          ? `${lightCount} light${lightCount !== 1 ? 's' : ''} · ${bri}%`
-          : `${lightCount} light${lightCount !== 1 ? 's' : ''}`;
+      const disabled     = !anyReachable;
+      const isOn         = room.on;
+      const groupId      = room.grouped_light_id;
+      const bri          = room.bri ?? 0;
+      const meta         = disabled
+        ? 'Unavailable'
+        : lightCount === 0
+          ? 'No lights'
+          : isOn
+            ? `${lightCount} light${lightCount !== 1 ? 's' : ''} · ${bri}%`
+            : `${lightCount} light${lightCount !== 1 ? 's' : ''}`;
       return `<div class="lights-room-row${disabled ? ' lights-room-unreachable' : ''}"
-              data-group-id="${groupId}" data-on="${isOn}">
+              data-room-id="${roomId}" data-group-id="${groupId}" data-on="${isOn}">
         <div class="lights-room-info">
           <span class="lights-room-name">${room.name}</span>
           <span class="lights-room-meta">${meta}</span>
         </div>
-        <div class="lights-toggle${isOn ? ' active' : ''}" role="switch" aria-checked="${isOn}" aria-label="${room.name}"></div>
+        <button class="lights-toggle-btn" data-group-id="${groupId}" data-on="${isOn}" aria-label="Toggle ${room.name}">
+          <div class="lights-toggle${isOn ? ' active' : ''}"></div>
+        </button>
       </div>`;
     })
     .join('');
@@ -263,15 +301,17 @@ function renderLights(data) {
   el.innerHTML = `<div class="sys-col-single">${rows}</div>`;
 
   el.querySelectorAll('.lights-room-row:not(.lights-room-unreachable)').forEach(row => {
-    row.addEventListener('click', () => {
-      const currentOn = row.dataset.on === 'true';
+    row.querySelector('.lights-toggle-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      const currentOn = btn.dataset.on === 'true';
       const newOn = !currentOn;
-      sendLightCommand('grouped_light', row.dataset.groupId, { on: { on: newOn } });
+      sendLightCommand('grouped_light', btn.dataset.groupId, { on: { on: newOn } });
+      btn.dataset.on = String(newOn);
       row.dataset.on = String(newOn);
-      const toggle = row.querySelector('.lights-toggle');
-      toggle.classList.toggle('active', newOn);
-      toggle.setAttribute('aria-checked', String(newOn));
+      btn.querySelector('.lights-toggle').classList.toggle('active', newOn);
     });
+    row.addEventListener('click', () => openRoomDetail(row.dataset.roomId));
   });
 }
 
@@ -280,7 +320,211 @@ function sendLightCommand(type, id, payload) {
   fbSet(ref(db, '/hue/commands/' + cmdId), { type, id, payload, ts: Date.now() });
 }
 
+function xyToHex(x, y) {
+  const Y = 1.0;
+  const X = (Y / y) * x;
+  const Z = (Y / y) * (1.0 - x - y);
+  let r =  X * 1.656492 - Y * 0.354851 - Z * 0.255038;
+  let g = -X * 0.707196 + Y * 1.655397 + Z * 0.036152;
+  let b =  X * 0.051713 - Y * 0.121364 + Z * 1.011530;
+  const max = Math.max(r, g, b, 1);
+  r = Math.max(0, r / max);
+  g = Math.max(0, g / max);
+  b = Math.max(0, b / max);
+  const gamma = v => v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055;
+  const toHex = v => Math.round(Math.min(1, Math.max(0, gamma(v))) * 255).toString(16).padStart(2, '0');
+  return '#' + toHex(r) + toHex(g) + toHex(b);
+}
+
+function hexToXy(hex) {
+  let r = parseInt(hex.slice(1,3),16)/255;
+  let g = parseInt(hex.slice(3,5),16)/255;
+  let b = parseInt(hex.slice(5,7),16)/255;
+  r = r > 0.04045 ? ((r+0.055)/1.055)**2.4 : r/12.92;
+  g = g > 0.04045 ? ((g+0.055)/1.055)**2.4 : g/12.92;
+  b = b > 0.04045 ? ((b+0.055)/1.055)**2.4 : b/12.92;
+  const X = r*0.664511 + g*0.154324 + b*0.162028;
+  const Y = r*0.283881 + g*0.668433 + b*0.047685;
+  const Z = r*0.000088 + g*0.072310 + b*0.986039;
+  const s = X+Y+Z;
+  return s === 0 ? {x:0.3127, y:0.3290} : {x:+(X/s).toFixed(4), y:+(Y/s).toFixed(4)};
+}
+
+function openRoomDetail(roomId) {
+  if (!_lastHueData?.rooms?.[roomId]) return;
+  clearTimeout(_briDebounce);
+  clearTimeout(_colorDebounce);
+  _activeRoomId = roomId;
+  const room = _lastHueData.rooms[roomId];
+
+  document.getElementById('lights-room-title').textContent = room.name;
+
+  const toggleBtn = document.getElementById('lights-room-toggle-btn');
+  const toggle    = document.getElementById('lights-room-toggle');
+  toggleBtn.dataset.groupId = room.grouped_light_id;
+  toggle.classList.toggle('active', room.on);
+  toggle.setAttribute('aria-checked', String(room.on));
+  toggle.dataset.on = String(room.on);
+
+  const colorLights  = Object.values(room.lights || {}).filter(l => l.color_capable);
+  const hasColor     = colorLights.length > 0;
+  const scenes       = Object.entries(room.scenes || {});
+  const bri          = room.bri || 0;
+  const currentColor = (() => {
+    const src = colorLights.find(l => l.on && l.xy) || colorLights.find(l => l.xy);
+    return src?.xy ? xyToHex(src.xy.x, src.xy.y) : '#ffffff';
+  })();
+
+  const ctrl = document.getElementById('lights-room-controls');
+  ctrl.innerHTML = `
+    <div class="section-label lights-section-label" style="margin-top:8px">Brightness</div>
+    <div class="lights-bri-row">
+      <input class="lights-bri-slider" id="lights-bri-slider" type="range" min="1" max="100" value="${bri || 1}">
+      <span class="lights-bri-val" id="lights-bri-val">${bri}%</span>
+    </div>
+    ${scenes.length ? `
+    <div class="section-label lights-section-label">Scenes</div>
+    <div class="lights-scene-chips">
+      ${scenes.map(([sid, s]) => `<button class="lights-scene-chip" data-scene-id="${sid}">${s.name}</button>`).join('')}
+    </div>` : ''}
+    ${hasColor ? `
+    <div class="section-label lights-section-label">Colour</div>
+    <div class="lights-color-row">
+      <label class="lights-color-swatch-label" for="lights-color-input">
+        <div class="lights-color-swatch" id="lights-color-swatch" style="background:${currentColor}"></div>
+        <input type="color" id="lights-color-input" class="lights-color-input" value="${currentColor}">
+      </label>
+    </div>` : ''}
+  `;
+
+  const slider = document.getElementById('lights-bri-slider');
+  const briVal = document.getElementById('lights-bri-val');
+  slider.addEventListener('input', () => {
+    briVal.textContent = slider.value + '%';
+    clearTimeout(_briDebounce);
+    _briDebounce = setTimeout(() => {
+      sendLightCommand('grouped_light', room.grouped_light_id, {
+        on: { on: true }, dimming: { brightness: +slider.value },
+      });
+    }, 300);
+  });
+  slider.addEventListener('change', () => {
+    clearTimeout(_briDebounce);
+    sendLightCommand('grouped_light', room.grouped_light_id, {
+      on: { on: true }, dimming: { brightness: +slider.value },
+    });
+  });
+
+  ctrl.querySelectorAll('.lights-scene-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      ctrl.querySelectorAll('.lights-scene-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      sendLightCommand('scene', chip.dataset.sceneId, {});
+    });
+  });
+
+  if (hasColor) {
+    const input  = document.getElementById('lights-color-input');
+    const swatch = document.getElementById('lights-color-swatch');
+    input.addEventListener('input', () => {
+      swatch.style.background = input.value;
+      clearTimeout(_colorDebounce);
+      _colorDebounce = setTimeout(() => {
+        const {x, y} = hexToXy(input.value);
+        sendLightCommand('grouped_light', room.grouped_light_id, {
+          on: { on: true }, color: { xy: { x, y } },
+        });
+      }, 300);
+    });
+    input.addEventListener('change', () => {
+      clearTimeout(_colorDebounce);
+      swatch.style.background = input.value;
+      const {x, y} = hexToXy(input.value);
+      sendLightCommand('grouped_light', room.grouped_light_id, {
+        on: { on: true }, color: { xy: { x, y } },
+      });
+    });
+  }
+
+  const overlay  = document.getElementById('lights-overlay');
+  const listView = document.getElementById('lights-list-view');
+  const roomView = document.getElementById('lights-room-view');
+  const easeOut  = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const easeIn   = 'cubic-bezier(0.4, 0, 1, 0.8)';
+  clearTimeout(_lightAnimTO);
+
+  overlay.style.height = overlay.offsetHeight + 'px';
+
+  // Exit list → left
+  listView.style.transition = `opacity 0.15s ease, transform 0.2s ${easeIn}`;
+  listView.style.transform  = 'translateX(-20px)';
+  listView.style.opacity    = '0';
+
+  _lightAnimTO = setTimeout(() => {
+    listView.classList.add('hidden');
+    listView.style.transition = listView.style.transform = listView.style.opacity = '';
+
+    // Enter room ← right
+    roomView.style.transition = 'none';
+    roomView.style.transform  = 'translateX(20px)';
+    roomView.style.opacity    = '0';
+    roomView.classList.remove('hidden');
+    void roomView.offsetWidth;
+
+    roomView.style.transition = `opacity 0.22s ${easeOut}, transform 0.3s ${easeOut}`;
+    roomView.style.transform  = 'translateX(0)';
+    roomView.style.opacity    = '1';
+
+    _lightAnimTO = setTimeout(() => {
+      roomView.style.transition = roomView.style.transform = roomView.style.opacity = '';
+    }, 320);
+  }, 180);
+}
+
+function closeRoomDetail() {
+  _activeRoomId = null;
+  clearTimeout(_briDebounce);
+  clearTimeout(_colorDebounce);
+  const overlay  = document.getElementById('lights-overlay');
+  const listView = document.getElementById('lights-list-view');
+  const roomView = document.getElementById('lights-room-view');
+  const easeOut  = 'cubic-bezier(0.22, 1, 0.36, 1)';
+  const easeIn   = 'cubic-bezier(0.4, 0, 1, 0.8)';
+  clearTimeout(_lightAnimTO);
+
+  // Exit room → right
+  roomView.style.transition = `opacity 0.15s ease, transform 0.2s ${easeIn}`;
+  roomView.style.transform  = 'translateX(20px)';
+  roomView.style.opacity    = '0';
+
+  _lightAnimTO = setTimeout(() => {
+    roomView.classList.add('hidden');
+    roomView.style.transition = roomView.style.transform = roomView.style.opacity = '';
+    overlay.style.height = '';
+
+    // Enter list ← left
+    listView.style.transition = 'none';
+    listView.style.transform  = 'translateX(-20px)';
+    listView.style.opacity    = '0';
+    listView.classList.remove('hidden');
+    void listView.offsetWidth;
+
+    listView.style.transition = `opacity 0.22s ${easeOut}, transform 0.3s ${easeOut}`;
+    listView.style.transform  = 'translateX(0)';
+    listView.style.opacity    = '1';
+
+    _lightAnimTO = setTimeout(() => {
+      listView.style.transition = listView.style.transform = listView.style.opacity = '';
+    }, 320);
+  }, 180);
+}
+
 let lightsGenieParams = null;
+let _lastHueData   = null;
+let _activeRoomId  = null;
+let _briDebounce   = null;
+let _lightAnimTO   = null;
+let _colorDebounce = null;
 
 function openLightsPanel() {
   const overlay = document.getElementById('lights-overlay');
@@ -329,7 +573,17 @@ function closeLightsPanel() {
     overlay.style.transition = '';
     overlay.style.transform  = '';
     overlay.style.opacity    = '';
+    overlay.style.height     = '';
     lightsGenieParams = null;
+    if (_activeRoomId !== null) {
+      _activeRoomId = null;
+      clearTimeout(_lightAnimTO);
+      const lv = document.getElementById('lights-list-view');
+      const rv = document.getElementById('lights-room-view');
+      if (lv) { lv.style.transition = lv.style.transform = lv.style.opacity = ''; lv.classList.remove('hidden'); }
+      if (rv) { rv.style.transition = rv.style.transform = rv.style.opacity = ''; rv.classList.add('hidden'); }
+      document.getElementById('lights-overlay').style.height = '';
+    }
   }, 400);
 }
 
@@ -1252,6 +1506,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('lights-btn')?.addEventListener('click', e => { e.stopPropagation(); spawnRipple(document.getElementById('lights-btn'), e); openLightsPanel(); });
   document.getElementById('lights-close')?.addEventListener('click', e => { e.stopPropagation(); closeLightsPanel(); });
+  document.getElementById('lights-back')?.addEventListener('click', closeRoomDetail);
+  document.getElementById('lights-room-toggle-btn')?.addEventListener('click', () => {
+    const toggle = document.getElementById('lights-room-toggle');
+    const btn    = document.getElementById('lights-room-toggle-btn');
+    const currentOn = toggle.dataset.on === 'true';
+    const newOn = !currentOn;
+    sendLightCommand('grouped_light', btn.dataset.groupId, { on: { on: newOn } });
+    toggle.dataset.on = String(newOn);
+    toggle.classList.toggle('active', newOn);
+    toggle.setAttribute('aria-checked', String(newOn));
+  });
 
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', e => spawnRipple(tab, e));

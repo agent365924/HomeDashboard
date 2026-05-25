@@ -29,9 +29,9 @@
   --live-bg:      #0f2a1a;
   --live-fg:      #4ade80;
   --live-dot:     #4ade80;
-  --text-warm:    #8c7d6a;
-  --text-sand:    #6e6054;
-  --text-sand-lo: #4a4038;
+  --text-warm:    #a89880;
+  --text-sand:    #8a7868;
+  --text-sand-lo: #6a5a4a;
   --toggle-knob:  var(--text-sand);
   --toggle-x:     0px;
   --chart-grid:   #303030;
@@ -194,7 +194,11 @@ html.light .status-error { background: #fff7ed; color: #c2410c; }
   -webkit-backdrop-filter: blur(12px);
 }
 html.light .theme-toggle {
-  background: rgba(255, 255, 255, 0.7);
+  background: #DFD6C3;
+  border-color: #c4bbaa;
+}
+html.light .theme-knob {
+  background: #7A766C;
 }
 .theme-knob {
   position: absolute;
@@ -945,7 +949,7 @@ html.light .lights-btn { background: rgba(255, 255, 255, 0.7); }
   background: rgba(255, 255, 255, 0.08);
   border: 0.5px solid var(--border);
   border-radius: 16px;
-  padding: 16px 18px;
+  padding: 16px 0 16px 18px;
   backdrop-filter: blur(48px);
   -webkit-backdrop-filter: blur(48px);
   opacity: 0;
@@ -960,19 +964,20 @@ html.light .lights-overlay { background: rgba(255, 255, 255, 0.7); }
 .scene.lights-overlay-open .lights-overlay { pointer-events: all; }
 .scene.lights-overlay-open .card          { opacity: 0; pointer-events: none; }
 .scene.lights-overlay-open .lights-btn    { opacity: 0; pointer-events: none; }
+.scene.lights-overlay-open .scene-status  { opacity: 0; pointer-events: none; }
 
 .lights-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 24px;
 }
-.lights-header-icon { font-size: 28px; line-height: 1; }
+.lights-header-icon { font-size: 22px; line-height: 1; }
 .lights-header-title {
   font-family: 'Barlow Semi Condensed', sans-serif;
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 500;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   flex: 1;
 }
 .lights-close {
@@ -993,8 +998,10 @@ html.light .lights-overlay { background: rgba(255, 255, 255, 0.7); }
 .lights-close:hover { background: var(--border); }
 
 .lights-section-label { margin-top: 8px; margin-bottom: 4px; }
-.lights-overlay .lights-header { margin-bottom: 8px; }
-.lights-overlay .lights-room-row { padding: 9px 0; }
+.lights-overlay .lights-header        { margin-bottom: 12px; padding-right: 18px; }
+.lights-overlay .lights-section-label { padding-right: 18px; }
+.lights-overlay .lights-room-row      { padding: 9px 18px 9px 0; }
+.lights-overlay #lights-room-controls { padding-right: 18px; }
 .lights-overlay .lights-rooms { overflow-y: auto; flex: 1; }
 
 .lights-room-row {
@@ -1008,12 +1015,15 @@ html.light .lights-overlay { background: rgba(255, 255, 255, 0.7); }
 }
 .lights-room-row:hover { opacity: 0.75; }
 .lights-room-row:last-child { border-bottom: none; }
-.lights-room-unreachable { color: var(--text-muted); pointer-events: none; cursor: default; }
+.lights-room-unreachable { color: #706050; pointer-events: none; cursor: default; }
+html.light .lights-room-unreachable { color: var(--text-muted); }
+.lights-room-unreachable .lights-room-name { color: var(--text-warm); }
+.lights-room-unreachable .lights-toggle-btn { display: none; }
 
 .lights-room-info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1px;
   flex: 1;
 }
 
@@ -1053,16 +1063,218 @@ html.light .lights-toggle { background: rgba(255, 255, 255, 0.7); }
   height: 14px;
   border-radius: 50%;
   background: var(--toggle-knob);
-  transition: transform .3s;
+  transition: transform .3s, background .3s;
+}
+.lights-toggle.active {
+  background: rgba(110, 96, 84, 0.55);
+  border-color: rgba(160, 140, 120, 0.5);
 }
 .lights-toggle.active::after {
   transform: translateX(16px);
+  background: #d4c8b8;
+}
+html.light .lights-toggle.active {
+  background: #DFD6C3;
+  border-color: #c4bbaa;
+}
+html.light .lights-toggle.active::after {
+  background: #7A766C;
 }
 
 .lights-empty {
   color: var(--text-muted);
   font-size: 14px;
   padding: 16px 0;
+}
+
+/* ── Lights: custom scrollbar ───────────────────────────────── */
+.lights-rooms {
+  scrollbar-width: thin;
+  scrollbar-color: #d4c8b8 transparent;
+}
+html.light .lights-rooms {
+  scrollbar-color: #7A766C transparent;
+}
+.lights-rooms::-webkit-scrollbar       { width: 4px; }
+.lights-rooms::-webkit-scrollbar-track { background: transparent; }
+.lights-rooms::-webkit-scrollbar-thumb {
+  background: #d4c8b8;
+  border-radius: 2px;
+}
+html.light .lights-rooms::-webkit-scrollbar-thumb { background: #7A766C; }
+
+/* ── Lights: view containers ────────────────────────────────── */
+.lights-views {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#lights-list-view,
+#lights-room-view {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Lights: back button ────────────────────────────────────── */
+.lights-back-btn {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-warm);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 0 2px;
+  line-height: 1;
+  transition: color .15s;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lights-back-btn:hover { color: var(--text); }
+
+/* ── Lights: toggle button wrapper ─────────────────────────── */
+.lights-toggle-btn {
+  background: none;
+  border: none;
+  padding: 8px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.lights-room-unreachable .lights-toggle-btn { pointer-events: none; }
+
+/* ── Lights: room controls scroll container ─────────────────── */
+#lights-room-controls {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── Lights: brightness slider ──────────────────────────────── */
+.lights-bri-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 12px;
+}
+.lights-bri-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.14);
+  outline: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.lights-bri-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.14);
+  border: none;
+}
+.lights-bri-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+  border: none;
+  margin-top: -5px;
+}
+.lights-bri-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.14);
+  border: none;
+}
+.lights-bri-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--text);
+  cursor: pointer;
+  border: none;
+}
+html.light .lights-bri-slider,
+html.light .lights-bri-slider::-webkit-slider-runnable-track,
+html.light .lights-bri-slider::-moz-range-track { background: rgba(0,0,0,0.14); }
+html.light .lights-bri-slider::-webkit-slider-thumb { background: #7A766C; }
+html.light .lights-bri-slider::-moz-range-thumb   { background: #7A766C; border: none; }
+.lights-bri-val {
+  font-size: 13px;
+  color: var(--text-warm);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── Lights: scene chips ────────────────────────────────────── */
+.lights-scene-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0 12px;
+}
+.lights-scene-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 0.5px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  white-space: nowrap;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lights-scene-chip:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.22); }
+.lights-scene-chip.active {
+  background: #facc15;
+  color: #000;
+  border-color: transparent;
+}
+html.light .lights-scene-chip { background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.1); }
+html.light .lights-scene-chip:hover { background: rgba(255,255,255,0.85); }
+
+/* ── Lights: colour picker ──────────────────────────────────── */
+.lights-color-row { padding: 8px 0 12px; }
+.lights-color-swatch-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  width: fit-content;
+}
+.lights-color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 0.5px solid var(--border);
+  flex-shrink: 0;
+  transition: transform .15s;
+}
+.lights-color-swatch-label:hover .lights-color-swatch { transform: scale(1.1); }
+.lights-color-label { font-size: 14px; color: var(--text-warm); }
+.lights-color-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
 }
 
 /* ── Responsive ────────────────────────────────────────────── */
