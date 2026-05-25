@@ -1251,12 +1251,19 @@ html.light .lights-bri-slider::-moz-range-thumb   { background: radial-gradient(
 }
 .lights-scene-chip:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.22); }
 .lights-scene-chip.active {
-  background: #facc15;
-  color: #000;
+  background: rgba(110, 96, 84, 0.45);
+  color: #f0ece8;
   border-color: transparent;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 html.light .lights-scene-chip { background: rgba(255,255,255,0.6); border-color: rgba(0,0,0,0.1); }
 html.light .lights-scene-chip:hover { background: rgba(255,255,255,0.85); }
+html.light .lights-scene-chip.active {
+  background: rgba(180, 160, 112, 0.40);
+  color: var(--text);
+  border-color: transparent;
+}
 
 /* ── Lights: colour picker ──────────────────────────────────── */
 .lights-color-row { padding: 4px 0 6px; }
