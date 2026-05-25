@@ -1182,6 +1182,7 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
   flex: 1;
   -webkit-appearance: none;
   height: 40px;
+  padding: 0 12px;
   background: transparent;
   outline: none;
   cursor: pointer;
@@ -1201,6 +1202,7 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
   background: radial-gradient(circle 7px at center, var(--text) 99%, transparent 100%);
   cursor: pointer;
   border: none;
+  box-shadow: none;
   margin-top: -18px;
 }
 .lights-bri-slider::-moz-range-track {
@@ -1221,6 +1223,7 @@ html.light #lights-room-controls::-webkit-scrollbar-thumb { background: #7A766C;
   background: radial-gradient(circle 7px at center, var(--text) 99%, transparent 100%);
   cursor: pointer;
   border: none;
+  box-shadow: none;
 }
 html.light .lights-bri-slider::-webkit-slider-runnable-track {
   background: linear-gradient(to right, #DFD7C3 var(--bri-pct, 0%), rgba(0,0,0,0.14) var(--bri-pct, 0%));
