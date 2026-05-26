@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scene Animation Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1814;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 24px;
+    font-family: system-ui, sans-serif;
+    color: #ccc;
+  }
+
+  .scene {
+    position: relative;
+    width: 480px;
+    height: 480px;
+  }
+
+  .house {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px; height: 480px;
+    pointer-events: none;
+  }
+  .house img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+  /* ── Scene animation overlay ────────────────── */
+  #scene-anim {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px; height: 480px;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  /* Cable path — single blurred layer; Gaussian falloff IS the gradient fade at each dot end */
+  .cable-halo {
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 22 70;
+    stroke-width: 20;
+    filter: url(#f-cable-blur);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  /* Night/day dot colours */
+  .cable-halo { stroke: #C5B4A0; }
+  html.light .cable-halo { stroke: #FFF4E8; }
+
+  /* Cable active — export (house → grid) */
+  #scene-anim.cable-export .cable-halo { opacity: 0.6; animation: cable-out 2s linear infinite; }
+
+  /* Cable active — import (grid → house) */
+  #scene-anim.cable-import .cable-halo { opacity: 0.6; animation: cable-in 2s linear infinite; }
+
+  @keyframes cable-out {
+    from { stroke-dashoffset: 92; }
+    to   { stroke-dashoffset: 0;  }
+  }
+  @keyframes cable-in {
+    from { stroke-dashoffset: 0;  }
+    to   { stroke-dashoffset: 92; }
+  }
+
+  /* Battery bars — night: darker green */
+  .bat-bar {
+    fill: none;
+    stroke: #1E7A38;
+    stroke-width: 10;
+    stroke-linecap: round;
+    opacity: 0;
+    filter: url(#f-bat-glow);
+    transition: opacity 0.8s ease;
+  }
+  #scene-anim.bat-charging .bat-bar {
+    opacity: 1;
+    animation: bat-pulse 2.2s ease-in-out infinite;
+  }
+  /* stagger bars slightly */
+  #scene-anim.bat-charging .bat-bar:nth-child(2) { animation-delay: 0.15s; }
+  #scene-anim.bat-charging .bat-bar:nth-child(3) { animation-delay: 0.30s; }
+
+  @keyframes bat-pulse {
+    0%, 100% { opacity: 0.45; }
+    50%       { opacity: 1;    }
+  }
+
+  /* Day mode: bright green */
+  html.light .bat-bar { stroke: #4ade80; }
+
+  /* ── Controls ───────────────────────────────── */
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #2a2622;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background .2s, border-color .2s;
+  }
+  button:hover  { background: #3a3430; border-color: #666; }
+  button.active { background: #3d3020; border-color: #8A7868; color: #DFD7C3; }
+
+  .label {
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+  }
+
+  /* debug toggle */
+  #debug-overlay {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px; height: 480px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  body.debug #debug-overlay { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="label">Scene Animation Preview — traced paths from energy.svg (viewBox 1069×1069)</div>
+
+<div class="scene">
+
+  <!-- House image -->
+  <div class="house">
+    <img src="house_day.png" alt="House" id="house-img">
+  </div>
+
+  <!-- Scene animation overlay — viewBox matches house_day.png native resolution -->
+  <svg id="scene-anim" viewBox="0 0 1069 1069" aria-hidden="true">
+    <defs>
+
+      <!-- Cable blur / glow tail — moderate blur creates Gaussian gradient fade at dot ends -->
+      <filter id="f-cable-blur" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="7"/>
+      </filter>
+
+      <!-- Battery bar bloom glow (stdDeviation scaled: 5 × 2.23 ≈ 11) -->
+      <filter id="f-bat-glow" x="-200%" y="-200%" width="500%" height="500%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="blur"/>
+        <feMerge>
+          <feMergeNode in="blur"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+
+    </defs>
+
+    <!--
+      CABLE PATH — traced from house_day.png at 1069×1069.
+      Direction: M (house side, lower-left) → end (grid exit, upper-right).
+      Export = house→grid = forward = cable-out (dashoffset 201→0).
+      Import = grid→house = reverse = cable-in  (dashoffset 0→201).
+    -->
+    <!-- Blurred cable — Gaussian falloff creates gradient fade at dot ends -->
+    <path class="cable-halo"
+      d="M320.5 831.5C320.166 839.582 320.566 851.256 333 863C351 880 408.573 917.902 463.5 938.5C527.5 962.5 587.458 972.166 640.859 956.752C688.5 943 690.799 923.895 689 916C687.201 908.105 685.511 903.5 684.5 895.5C684 891.543 686 882.102 698 876C710 869.898 832.5 809 911.5 766.5C922 761.167 940 743.5 940 705.5C942 644 941.667 642.833 942 639.5"/>
+
+    <!--
+      BATTERY BARS — three traced line segments over the LED indicators.
+      Using exact paths from energy.svg (stroke-width 10 ≈ 4.5px at 480px display).
+    -->
+    <g id="bat-lines">
+      <path class="bat-bar" d="M249.5 720.5L271.5 730"/>
+      <path class="bat-bar" d="M249.5 752L271.5 761.5"/>
+      <path class="bat-bar" d="M249.5 782L271.5 791.5"/>
+    </g>
+
+  </svg>
+
+  <!-- Debug overlay: shows cable path + bar positions as red/green outlines -->
+  <svg id="debug-overlay" viewBox="0 0 1069 1069">
+    <!-- Cable path in red -->
+    <path d="M320.5 831.5C320.166 839.582 320.566 851.256 333 863C351 880 408.573 917.902 463.5 938.5C527.5 962.5 587.458 972.166 640.859 956.752C688.5 943 690.799 923.895 689 916C687.201 908.105 685.511 903.5 684.5 895.5C684 891.543 686 882.102 698 876C710 869.898 832.5 809 911.5 766.5C922 761.167 940 743.5 940 705.5C942 644 941.667 642.833 942 639.5"
+          fill="none" stroke="red" stroke-width="2" opacity="0.7"/>
+    <!-- Start marker -->
+    <circle cx="320.5" cy="831.5" r="8" fill="none" stroke="red" stroke-width="2"/>
+    <!-- Battery bars in green -->
+    <path d="M249.5 720.5L271.5 730"   fill="none" stroke="#4ade80" stroke-width="3" opacity="0.8"/>
+    <path d="M249.5 752L271.5 761.5"   fill="none" stroke="#4ade80" stroke-width="3" opacity="0.8"/>
+    <path d="M249.5 782L271.5 791.5"   fill="none" stroke="#4ade80" stroke-width="3" opacity="0.8"/>
+  </svg>
+
+</div>
+
+<!-- State toggle controls -->
+<div class="controls">
+  <button id="btn-idle"   class="active" onclick="setState('idle')">Idle</button>
+  <button id="btn-export"             onclick="setState('export')">⚡ Export to grid</button>
+  <button id="btn-import"             onclick="setState('import')">⬇ Import from grid</button>
+  <button id="btn-charge"             onclick="setState('charge')">🔋 Battery charging</button>
+  <button id="btn-all"                onclick="setState('all')">All at once</button>
+</div>
+
+<div class="controls">
+  <button onclick="document.body.classList.toggle('debug')" style="font-size:11px;padding:6px 12px;">
+    Toggle debug outlines (red = cable path, green = battery bars)
+  </button>
+</div>
+
+<script>
+  const svg = document.getElementById('scene-anim');
+  const buttons = { idle:'btn-idle', export:'btn-export', import:'btn-import', charge:'btn-charge', all:'btn-all' };
+
+  function setState(state) {
+    svg.classList.remove('cable-export','cable-import','bat-charging');
+    Object.values(buttons).forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById(buttons[state]).classList.add('active');
+
+    if (state === 'export') svg.classList.add('cable-export');
+    if (state === 'import') svg.classList.add('cable-import');
+    if (state === 'charge') svg.classList.add('bat-charging');
+    if (state === 'all')    svg.classList.add('cable-export','bat-charging');
+  }
+</script>
+
+</body>
+</html>

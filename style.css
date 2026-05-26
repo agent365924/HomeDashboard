@@ -291,6 +291,72 @@ html.light .card {
   display: block;
 }
 
+/* ── Scene animation overlay ─────────────────────────────── */
+#scene-anim {
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px; height: 480px;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Cable path — single blurred layer; Gaussian falloff IS the gradient fade at each dot end */
+.cable-halo {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 22 70;
+  stroke-width: 20;
+  filter: url(#f-cable-blur);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+/* Night/day dot colours */
+.cable-halo { stroke: #C5B4A0; }
+html.light .cable-halo { stroke: #FFF4E8; }
+
+/* Export (house → grid): dots flow start → end */
+#scene-anim.cable-export .cable-halo { opacity: 0.6; animation: cable-out 2s linear infinite; }
+
+/* Import (grid → house): dots flow end → start */
+#scene-anim.cable-import .cable-halo { opacity: 0.6; animation: cable-in 2s linear infinite; }
+
+@keyframes cable-out {
+  from { stroke-dashoffset: 92; }
+  to   { stroke-dashoffset: 0;  }
+}
+@keyframes cable-in {
+  from { stroke-dashoffset: 0;  }
+  to   { stroke-dashoffset: 92; }
+}
+
+/* Battery LED bars — night: darker green (base rendering already shows lit cells) */
+.bat-bar {
+  fill: none;
+  stroke: #1E7A38;
+  stroke-width: 10;
+  stroke-linecap: round;
+  opacity: 0;
+  filter: url(#f-bat-glow);
+  transition: opacity 0.8s ease;
+}
+#scene-anim.bat-charging .bat-bar {
+  opacity: 1;
+  animation: bat-pulse 2.2s ease-in-out infinite;
+}
+#scene-anim.bat-charging .bat-bar:nth-child(2) { animation-delay: 0.15s; }
+#scene-anim.bat-charging .bat-bar:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes bat-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 1;    }
+}
+
+/* Day mode: bright green since house rendering shows unlit cells */
+html.light .bat-bar { stroke: #4ade80; }
+
 /* info bar */
 .info-bar {
   display: flex;
@@ -732,7 +798,7 @@ html.light .card-overlay {
   margin-bottom: 12px;
 }
 .overlay-title-group { display: flex; align-items: center; gap: 8px; }
-.overlay-icon { font-size: 22px; line-height: 1; }
+.overlay-icon { font-size: 30px; line-height: 1; }
 .overlay-title {
   font-family: 'Barlow Semi Condensed', sans-serif;
   font-size: 26px;
@@ -1308,6 +1374,7 @@ html.light .lights-scene-chip.active {
   .app { padding: 0 12px 48px; }
   .scene { height: 390px; margin-top: 5px; }
   .house { width: 340px; height: 340px; }
+  #scene-anim { width: 340px; height: 340px; }
 
   /* cards scale to ~44% of viewport so two fit side by side */
   .card {
@@ -1350,7 +1417,7 @@ html.light .lights-scene-chip.active {
   .sys-card:has(.chart-wrap) .day-divider { padding-left: 12px; padding-right: 12px; }
 
   .card-overlay { width: 59vw; height: auto; }
-  .overlay-title { font-size: 18px; }
+  .overlay-title { font-size: 22px; }
 
   /* lights */
   .lights-btn { right: 4px; width: 56px; height: 56px; font-size: 26px; }

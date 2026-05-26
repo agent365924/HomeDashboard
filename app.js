@@ -629,6 +629,15 @@ function renderLive(d) {
     : fmt(netGrid, 2) + ' kW';
   set('grid-net', netStr);
 
+  /* scene animation — cable + battery LED bars */
+  const sceneAnim = document.getElementById('scene-anim');
+  if (sceneAnim) {
+    sceneAnim.classList.remove('cable-export', 'cable-import', 'bat-charging');
+    if ((d.grid_export_kw ?? 0) > 0.05)  sceneAnim.classList.add('cable-export');
+    else if ((d.grid_import_kw ?? 0) > 0.05) sceneAnim.classList.add('cable-import');
+    if ((d.battery_kw ?? 0) < -0.05)     sceneAnim.classList.add('bat-charging');
+  }
+
   /* climate panel — outdoor */
   set('clim-out-temp', d.temperature_c != null ? fmt(d.temperature_c, 1) + ' °C' : '—');
   const wxClim = WX[d.weathercode] ?? { label: '—' };
@@ -1510,6 +1519,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('lights-btn')?.addEventListener('click', e => { e.stopPropagation(); spawnRipple(document.getElementById('lights-btn'), e); openLightsPanel(); });
   document.getElementById('lights-close')?.addEventListener('click', e => { e.stopPropagation(); closeLightsPanel(); });
+  document.querySelector('#lights-list-view .lights-header')?.addEventListener('click', closeLightsPanel);
   document.getElementById('lights-back')?.addEventListener('click', closeRoomDetail);
   document.getElementById('lights-room-toggle-btn')?.addEventListener('click', () => {
     const toggle = document.getElementById('lights-room-toggle');
