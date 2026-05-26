@@ -636,6 +636,15 @@ function renderLive(d) {
     if ((d.grid_export_kw ?? 0) > 0.05)  sceneAnim.classList.add('cable-export');
     else if ((d.grid_import_kw ?? 0) > 0.05) sceneAnim.classList.add('cable-import');
     if ((d.battery_kw ?? 0) < -0.05)     sceneAnim.classList.add('bat-charging');
+
+    /* battery SOC level — 3 bars fill bottom-up:
+       bar 1 (top, 1st child), bar 2 (mid, 2nd child), bar 3 (bottom, 3rd child)
+       0%: all off  |  1-33%: bar3  |  34-66%: bar2+3  |  67-100%: all */
+    const soc      = d.battery_soc ?? 0;
+    const batLevel = soc <= 0 ? 0 : soc < 34 ? 1 : soc < 67 ? 2 : 3;
+    sceneAnim.querySelectorAll('.bat-bar').forEach((bar, i) => {
+      bar.classList.toggle('bar-lit', batLevel > 0 && i >= 3 - batLevel);
+    });
   }
 
   /* climate panel — outdoor */

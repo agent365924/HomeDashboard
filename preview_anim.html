@@ -72,31 +72,35 @@
     to   { stroke-dashoffset: 92; }
   }
 
-  /* Battery bars — night: darker green */
+  /* Battery bars — light green, level-based via .bar-lit */
   .bat-bar {
     fill: none;
-    stroke: #1E7A38;
+    stroke: #4ade80;
     stroke-width: 10;
     stroke-linecap: round;
     opacity: 0;
     filter: url(#f-bat-glow);
     transition: opacity 0.8s ease;
   }
-  #scene-anim.bat-charging .bat-bar {
-    opacity: 1;
+
+  /* Lit state — set per-bar by JS */
+  .bat-bar.bar-lit { opacity: 0.8; }
+
+  /* Charging pulse — only on lit bars */
+  #scene-anim.bat-charging .bat-bar.bar-lit {
     animation: bat-pulse 2.2s ease-in-out infinite;
   }
-  /* stagger bars slightly */
-  #scene-anim.bat-charging .bat-bar:nth-child(2) { animation-delay: 0.15s; }
-  #scene-anim.bat-charging .bat-bar:nth-child(3) { animation-delay: 0.30s; }
+  #scene-anim.bat-charging .bat-bar.bar-lit:nth-child(2) { animation-delay: 0.15s; }
+  #scene-anim.bat-charging .bat-bar.bar-lit:nth-child(3) { animation-delay: 0.30s; }
 
   @keyframes bat-pulse {
     0%, 100% { opacity: 0.45; }
     50%       { opacity: 1;    }
   }
 
-  /* Day mode: bright green */
-  html.light .bat-bar { stroke: #4ade80; }
+  /* Day mode: vivid green + full opacity */
+  html.light .bat-bar         { stroke: #00e676; }
+  html.light .bat-bar.bar-lit { opacity: 1; }
 
   /* ── Controls ───────────────────────────────── */
   .controls {
@@ -214,6 +218,14 @@
   <button id="btn-all"                onclick="setState('all')">All at once</button>
 </div>
 
+<div class="label" style="margin-top:4px;">Battery level</div>
+<div class="controls">
+  <button id="btn-bat-0" onclick="setBatLevel(0)">0 % (empty)</button>
+  <button id="btn-bat-1" onclick="setBatLevel(1)">~20 % (1 bar)</button>
+  <button id="btn-bat-2" onclick="setBatLevel(2)">~50 % (2 bars)</button>
+  <button id="btn-bat-3" class="active" onclick="setBatLevel(3)">~90 % (3 bars)</button>
+</div>
+
 <div class="controls">
   <button onclick="document.body.classList.toggle('debug')" style="font-size:11px;padding:6px 12px;">
     Toggle debug outlines (red = cable path, green = battery bars)
@@ -223,6 +235,20 @@
 <script>
   const svg = document.getElementById('scene-anim');
   const buttons = { idle:'btn-idle', export:'btn-export', import:'btn-import', charge:'btn-charge', all:'btn-all' };
+  const batBtns = ['btn-bat-0','btn-bat-1','btn-bat-2','btn-bat-3'];
+  let currentBatLevel = 3;
+
+  function applyBatLevel(level) {
+    svg.querySelectorAll('.bat-bar').forEach((bar, i) => {
+      bar.classList.toggle('bar-lit', level > 0 && i >= 3 - level);
+    });
+  }
+
+  function setBatLevel(level) {
+    currentBatLevel = level;
+    batBtns.forEach((id, idx) => document.getElementById(id).classList.toggle('active', idx === level));
+    applyBatLevel(level);
+  }
 
   function setState(state) {
     svg.classList.remove('cable-export','cable-import','bat-charging');
@@ -234,6 +260,9 @@
     if (state === 'charge') svg.classList.add('bat-charging');
     if (state === 'all')    svg.classList.add('cable-export','bat-charging');
   }
+
+  // initialise to 3 bars on load
+  applyBatLevel(3);
 </script>
 
 </body>

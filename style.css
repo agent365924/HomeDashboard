@@ -299,7 +299,7 @@ html.light .card {
   width: 480px; height: 480px;
   overflow: visible;
   pointer-events: none;
-  z-index: 1;
+  /* no z-index — sits below cards via DOM order */
 }
 
 /* Cable path — single blurred layer; Gaussian falloff IS the gradient fade at each dot end */
@@ -332,30 +332,35 @@ html.light .cable-halo { stroke: #FFF4E8; }
   to   { stroke-dashoffset: 92; }
 }
 
-/* Battery LED bars — night: darker green (base rendering already shows lit cells) */
+/* Battery LED bars — light green, level-based via .bar-lit (set by JS per battery_soc) */
 .bat-bar {
   fill: none;
-  stroke: #1E7A38;
+  stroke: #4ade80;
   stroke-width: 10;
   stroke-linecap: round;
   opacity: 0;
   filter: url(#f-bat-glow);
   transition: opacity 0.8s ease;
 }
-#scene-anim.bat-charging .bat-bar {
-  opacity: 1;
+
+/* Lit state — set per-bar by JS; bars fill bottom-up */
+.bat-bar.bar-lit { opacity: 0.8; }
+
+/* Charging pulse — only on currently-lit bars */
+#scene-anim.bat-charging .bat-bar.bar-lit {
   animation: bat-pulse 2.2s ease-in-out infinite;
 }
-#scene-anim.bat-charging .bat-bar:nth-child(2) { animation-delay: 0.15s; }
-#scene-anim.bat-charging .bat-bar:nth-child(3) { animation-delay: 0.30s; }
+#scene-anim.bat-charging .bat-bar.bar-lit:nth-child(2) { animation-delay: 0.15s; }
+#scene-anim.bat-charging .bat-bar.bar-lit:nth-child(3) { animation-delay: 0.30s; }
 
 @keyframes bat-pulse {
   0%, 100% { opacity: 0.45; }
   50%       { opacity: 1;    }
 }
 
-/* Day mode: bright green since house rendering shows unlit cells */
-html.light .bat-bar { stroke: #4ade80; }
+/* Day mode: vivid saturated green + full opacity so bars pop against the bright house image */
+html.light .bat-bar              { stroke: #00e676; }
+html.light .bat-bar.bar-lit      { opacity: 1; }
 
 /* info bar */
 .info-bar {
