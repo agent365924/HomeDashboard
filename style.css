@@ -425,7 +425,9 @@ html.light .bat-bar.bar-lit      { opacity: 1; }
   letter-spacing: .12em;
   color: var(--text-sand);
   font-weight: 400;
+  padding: 8px 0;
   margin-bottom: 10px;
+  text-align: center;
 }
 
 /* ── System status ─────────────────────────────────────────── */
@@ -1068,7 +1070,7 @@ html.light .lights-overlay { background: rgba(255, 255, 255, 0.7); }
 }
 .lights-close:hover { background: var(--border); }
 
-.lights-section-label { margin-top: 8px; margin-bottom: 2px; }
+.lights-section-label { padding: 0; margin-top: 8px; margin-bottom: 2px; text-align: left; }
 .lights-overlay .lights-header        { margin-bottom: 6px; padding-right: 18px; }
 .lights-overlay .lights-section-label { padding-right: 18px; margin-bottom: 0; }
 #lights-room-controls .lights-section-label { margin-top: 4px; }
