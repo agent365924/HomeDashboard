@@ -302,37 +302,70 @@ html.light .card {
   /* no z-index — sits below cards via DOM order */
 }
 
-/* Cable path — single blurred layer; Gaussian falloff IS the gradient fade at each dot end */
-.cable-halo {
+/* Continuous gap line between dashes */
+.cable-gap {
   fill: none;
+  stroke: #4e3e30;
   stroke-linecap: round;
-  stroke-dasharray: 22 70;
+  stroke-width: 20;
+  filter: url(#f-gap-blur);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+html.light .cable-gap { stroke: #ecdfd0; }
+
+#scene-anim.cable-export .cable-gap,
+#scene-anim.cable-import .cable-gap { opacity: 0.3; }
+
+/* Animated dashes — main dot + 3 trailing comet layers */
+.cable-halo, .cable-trail {
+  fill: none;
+  stroke: #8A7A6A;
+  stroke-linecap: round;
+  stroke-dasharray: 44 64;
   stroke-width: 20;
   filter: url(#f-cable-blur);
   opacity: 0;
   transition: opacity 0.6s ease;
 }
 
-/* Night/day dot colours */
-.cable-halo { stroke: #C5B4A0; }
-html.light .cable-halo { stroke: #FFF4E8; }
+html.light .cable-halo,
+html.light .cable-trail { stroke: #FFF4E8; }
 
-/* Export (house → grid): dots flow start → end */
-#scene-anim.cable-export .cable-halo { opacity: 0.6; animation: cable-out 2s linear infinite; }
+/* Export (house → grid) */
+#scene-anim.cable-export .cable-halo    { opacity: 0.35; animation: cable-out    2s linear infinite; }
+#scene-anim.cable-export .cable-trail-1 { opacity: 0.22; animation: cable-out-t1 2s linear infinite; }
+#scene-anim.cable-export .cable-trail-2 { opacity: 0.12; animation: cable-out-t2 2s linear infinite; }
+#scene-anim.cable-export .cable-trail-3 { opacity: 0.05; animation: cable-out-t3 2s linear infinite; }
 
-/* Import (grid → house): dots flow end → start */
-#scene-anim.cable-import .cable-halo { opacity: 0.6; animation: cable-in 2s linear infinite; }
+/* Import (grid → house) */
+#scene-anim.cable-import .cable-halo    { opacity: 0.35; animation: cable-in     2s linear infinite; }
+#scene-anim.cable-import .cable-trail-1 { opacity: 0.22; animation: cable-in-t1  2s linear infinite; }
+#scene-anim.cable-import .cable-trail-2 { opacity: 0.12; animation: cable-in-t2  2s linear infinite; }
+#scene-anim.cable-import .cable-trail-3 { opacity: 0.05; animation: cable-in-t3  2s linear infinite; }
 
-@keyframes cable-out {
-  from { stroke-dashoffset: 92; }
-  to   { stroke-dashoffset: 0;  }
+/* Period = 108 (44+64). Trail-N lags N units behind on the spline via dashoffset. */
+@keyframes cable-out    { from { stroke-dashoffset: 108; } to { stroke-dashoffset: 0;   } }
+@keyframes cable-out-t1 { from { stroke-dashoffset: 124; } to { stroke-dashoffset: 16;  } }
+@keyframes cable-out-t2 { from { stroke-dashoffset: 140; } to { stroke-dashoffset: 32;  } }
+@keyframes cable-out-t3 { from { stroke-dashoffset: 156; } to { stroke-dashoffset: 48;  } }
+
+@keyframes cable-in     { from { stroke-dashoffset: 0;   } to { stroke-dashoffset: 108; } }
+@keyframes cable-in-t1  { from { stroke-dashoffset: -16; } to { stroke-dashoffset: 92;  } }
+@keyframes cable-in-t2  { from { stroke-dashoffset: -32; } to { stroke-dashoffset: 76;  } }
+@keyframes cable-in-t3  { from { stroke-dashoffset: -48; } to { stroke-dashoffset: 60;  } }
+
+/* Battery empty bars — opaque dark grey, no glow */
+.bat-bar-empty {
+  fill: none;
+  stroke: #3a3a3a;
+  stroke-width: 10;
+  stroke-linecap: round;
+  opacity: 1;
 }
-@keyframes cable-in {
-  from { stroke-dashoffset: 0;  }
-  to   { stroke-dashoffset: 92; }
-}
 
-/* Battery LED bars — light green, level-based via .bar-lit (set by JS per battery_soc) */
+/* Battery lit bars */
 .bat-bar {
   fill: none;
   stroke: #4ade80;
@@ -343,10 +376,8 @@ html.light .cable-halo { stroke: #FFF4E8; }
   transition: opacity 0.8s ease;
 }
 
-/* Lit state — set per-bar by JS; bars fill bottom-up */
-.bat-bar.bar-lit { opacity: 0.8; }
+.bat-bar.bar-lit { opacity: 1; }
 
-/* Charging pulse — only on currently-lit bars */
 #scene-anim.bat-charging .bat-bar.bar-lit {
   animation: bat-pulse 2.2s ease-in-out infinite;
 }
@@ -354,11 +385,11 @@ html.light .cable-halo { stroke: #FFF4E8; }
 #scene-anim.bat-charging .bat-bar.bar-lit:nth-child(3) { animation-delay: 0.30s; }
 
 @keyframes bat-pulse {
-  0%, 100% { opacity: 0.45; }
-  50%       { opacity: 1;    }
+  0%, 100% { stroke: #1a5c30; }
+  50%       { stroke: #86efac; }
 }
 
-/* Day mode: vivid saturated green + full opacity so bars pop against the bright house image */
+html.light .bat-bar-empty        { stroke: #3a3a3a; }
 html.light .bat-bar              { stroke: #00e676; }
 html.light .bat-bar.bar-lit      { opacity: 1; }
 

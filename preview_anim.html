@@ -2,37 +2,62 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Scene Animation Preview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animation Preview</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    background: #1a1814;
+    background: #0d0d0d;
+    color: #e8e8e8;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     min-height: 100vh;
-    gap: 24px;
-    font-family: system-ui, sans-serif;
-    color: #ccc;
+    padding: 32px 16px;
+    gap: 32px;
   }
 
+  body.light-mode {
+    background: #f0ebe3;
+    color: #1a1a1a;
+  }
+
+  h1 {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.4;
+  }
+
+  /* ── Scene ── */
   .scene {
     position: relative;
     width: 480px;
     height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .house {
     position: absolute;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    width: 480px; height: 480px;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .house img {
+    width: 480px;
+    height: 480px;
+    object-fit: contain;
+    user-select: none;
     pointer-events: none;
   }
-  .house img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
-  /* ── Scene animation overlay ────────────────── */
   #scene-anim {
     position: absolute;
     left: 50%; top: 50%;
@@ -42,37 +67,73 @@
     pointer-events: none;
   }
 
-  /* Cable path — single blurred layer; Gaussian falloff IS the gradient fade at each dot end */
-  .cable-halo {
+  /* ── Cable ── */
+  /* Gap filler — static dim dashes that sit in between the animated bright dots */
+  .cable-gap {
     fill: none;
+    stroke: #4e3e30;
     stroke-linecap: round;
-    stroke-dasharray: 22 70;
+    stroke-width: 20;
+    filter: url(#f-gap-blur);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  body.light-mode .cable-gap { stroke: #ecdfd0; }
+
+  #scene-anim.cable-export .cable-gap,
+  #scene-anim.cable-import .cable-gap { opacity: 0.3; }
+
+  .cable-halo, .cable-trail {
+    fill: none;
+    stroke: #8A7A6A;
+    stroke-linecap: round;
+    stroke-dasharray: 44 64;
     stroke-width: 20;
     filter: url(#f-cable-blur);
     opacity: 0;
     transition: opacity 0.6s ease;
   }
 
-  /* Night/day dot colours */
-  .cable-halo { stroke: #C5B4A0; }
-  html.light .cable-halo { stroke: #FFF4E8; }
+  body.light-mode .cable-halo,
+  body.light-mode .cable-trail { stroke: #FFF4E8; }
 
-  /* Cable active — export (house → grid) */
-  #scene-anim.cable-export .cable-halo { opacity: 0.6; animation: cable-out 2s linear infinite; }
+  /* Main dot */
+  #scene-anim.cable-export .cable-halo { opacity: 0.35; animation: cable-out   2s linear infinite; }
+  #scene-anim.cable-import .cable-halo { opacity: 0.35; animation: cable-in    2s linear infinite; }
 
-  /* Cable active — import (grid → house) */
-  #scene-anim.cable-import .cable-halo { opacity: 0.6; animation: cable-in 2s linear infinite; }
+  /* Trail layers — each shifted N units behind along the path */
+  #scene-anim.cable-export .cable-trail-1 { opacity: 0.22; animation: cable-out-t1 2s linear infinite; }
+  #scene-anim.cable-export .cable-trail-2 { opacity: 0.12; animation: cable-out-t2 2s linear infinite; }
+  #scene-anim.cable-export .cable-trail-3 { opacity: 0.05; animation: cable-out-t3 2s linear infinite; }
 
-  @keyframes cable-out {
-    from { stroke-dashoffset: 92; }
-    to   { stroke-dashoffset: 0;  }
+  #scene-anim.cable-import .cable-trail-1 { opacity: 0.22; animation: cable-in-t1  2s linear infinite; }
+  #scene-anim.cable-import .cable-trail-2 { opacity: 0.12; animation: cable-in-t2  2s linear infinite; }
+  #scene-anim.cable-import .cable-trail-3 { opacity: 0.05; animation: cable-in-t3  2s linear infinite; }
+
+  /* Period = 44+64 = 108. Trail-N adds N to dashoffset so it lags N units behind on the spline. */
+  @keyframes cable-out    { from { stroke-dashoffset: 108; } to { stroke-dashoffset: 0;   } }
+  @keyframes cable-out-t1 { from { stroke-dashoffset: 124; } to { stroke-dashoffset: 16;  } }
+  @keyframes cable-out-t2 { from { stroke-dashoffset: 140; } to { stroke-dashoffset: 32;  } }
+  @keyframes cable-out-t3 { from { stroke-dashoffset: 156; } to { stroke-dashoffset: 48;  } }
+
+  @keyframes cable-in     { from { stroke-dashoffset: 0;   } to { stroke-dashoffset: 108; } }
+  @keyframes cable-in-t1  { from { stroke-dashoffset: -16; } to { stroke-dashoffset: 92;  } }
+  @keyframes cable-in-t2  { from { stroke-dashoffset: -32; } to { stroke-dashoffset: 76;  } }
+  @keyframes cable-in-t3  { from { stroke-dashoffset: -48; } to { stroke-dashoffset: 60;  } }
+
+  /* ── Battery empty bars (always shown, opaque dark grey, no glow) ── */
+  .bat-bar-empty {
+    fill: none;
+    stroke: #3a3a3a;
+    stroke-width: 10;
+    stroke-linecap: round;
+    opacity: 1;
   }
-  @keyframes cable-in {
-    from { stroke-dashoffset: 0;  }
-    to   { stroke-dashoffset: 92; }
-  }
 
-  /* Battery bars — light green, level-based via .bar-lit */
+  body.light-mode .bat-bar-empty { stroke: #3a3a3a; }
+
+  /* ── Battery lit bars ── */
   .bat-bar {
     fill: none;
     stroke: #4ade80;
@@ -83,10 +144,8 @@
     transition: opacity 0.8s ease;
   }
 
-  /* Lit state — set per-bar by JS */
-  .bat-bar.bar-lit { opacity: 0.8; }
+  .bat-bar.bar-lit { opacity: 1; }
 
-  /* Charging pulse — only on lit bars */
   #scene-anim.bat-charging .bat-bar.bar-lit {
     animation: bat-pulse 2.2s ease-in-out infinite;
   }
@@ -94,176 +153,280 @@
   #scene-anim.bat-charging .bat-bar.bar-lit:nth-child(3) { animation-delay: 0.30s; }
 
   @keyframes bat-pulse {
-    0%, 100% { opacity: 0.45; }
-    50%       { opacity: 1;    }
+    0%, 100% { stroke: #1a5c30; }
+    50%       { stroke: #86efac; }
   }
 
-  /* Day mode: vivid green + full opacity */
-  html.light .bat-bar         { stroke: #00e676; }
-  html.light .bat-bar.bar-lit { opacity: 1; }
+  body.light-mode .bat-bar { stroke: #00e676; }
+  body.light-mode .bat-bar.bar-lit { opacity: 1; }
 
-  /* ── Controls ───────────────────────────────── */
+  /* ── Controls ── */
   .controls {
     display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    width: 480px;
   }
-  button {
-    padding: 9px 18px;
-    border-radius: 8px;
-    border: 1px solid #444;
-    background: #2a2622;
-    color: #ccc;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background .2s, border-color .2s;
-  }
-  button:hover  { background: #3a3430; border-color: #666; }
-  button.active { background: #3d3020; border-color: #8A7868; color: #DFD7C3; }
 
-  .label {
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .control-label {
     font-size: 12px;
-    color: #666;
-    text-align: center;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    width: 100px;
+    flex-shrink: 0;
   }
 
-  /* debug toggle */
-  #debug-overlay {
-    position: absolute;
-    left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
-    width: 480px; height: 480px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity .3s;
+  .btn-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
   }
-  body.debug #debug-overlay { opacity: 1; }
+
+  button {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: inherit;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  body.light-mode button {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.12);
+  }
+
+  button:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  body.light-mode button:hover {
+    background: rgba(0,0,0,0.10);
+  }
+
+  button.active {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.4);
+    color: #fff;
+  }
+
+  body.light-mode button.active {
+    background: rgba(0,0,0,0.12);
+    border-color: rgba(0,0,0,0.35);
+    color: #000;
+  }
+
+  .divider {
+    width: 480px;
+    height: 1px;
+    background: rgba(255,255,255,0.07);
+  }
+
+  body.light-mode .divider {
+    background: rgba(0,0,0,0.08);
+  }
 </style>
 </head>
-<body>
+<body id="body">
 
-<div class="label">Scene Animation Preview — traced paths from energy.svg (viewBox 1069×1069)</div>
+<h1>House Animation Preview</h1>
 
+<!-- Scene -->
 <div class="scene">
-
-  <!-- House image -->
   <div class="house">
     <img src="house_day.png" alt="House" id="house-img">
   </div>
 
-  <!-- Scene animation overlay — viewBox matches house_day.png native resolution -->
   <svg id="scene-anim" viewBox="0 0 1069 1069" aria-hidden="true">
     <defs>
-
-      <!-- Cable blur / glow tail — moderate blur creates Gaussian gradient fade at dot ends -->
       <filter id="f-cable-blur" x="-100%" y="-100%" width="300%" height="300%">
-        <feGaussianBlur stdDeviation="7"/>
+        <feGaussianBlur stdDeviation="5"/>
       </filter>
-
-      <!-- Battery bar bloom glow (stdDeviation scaled: 5 × 2.23 ≈ 11) -->
+      <filter id="f-gap-blur" x="-100%" y="-100%" width="300%" height="300%">
+        <feGaussianBlur stdDeviation="2.5"/>
+      </filter>
       <filter id="f-bat-glow" x="-200%" y="-200%" width="500%" height="500%">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="11" result="blur"/>
+        <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="blur"/>
         <feMerge>
           <feMergeNode in="blur"/>
           <feMergeNode in="SourceGraphic"/>
         </feMerge>
       </filter>
-
     </defs>
-
-    <!--
-      CABLE PATH — traced from house_day.png at 1069×1069.
-      Direction: M (house side, lower-left) → end (grid exit, upper-right).
-      Export = house→grid = forward = cable-out (dashoffset 201→0).
-      Import = grid→house = reverse = cable-in  (dashoffset 0→201).
-    -->
-    <!-- Blurred cable — Gaussian falloff creates gradient fade at dot ends -->
+    <path class="cable-gap"
+      d="M320.5 831.5C320.166 839.582 320.566 851.256 333 863C351 880 408.573 917.902 463.5 938.5C527.5 962.5 587.458 972.166 640.859 956.752C688.5 943 690.799 923.895 689 916C687.201 908.105 685.511 903.5 684.5 895.5C684 891.543 686 882.102 698 876C710 869.898 832.5 809 911.5 766.5C922 761.167 940 743.5 940 705.5C942 644 941.667 642.833 942 639.5"/>
+    <path class="cable-trail cable-trail-3"
+      d="M320.5 831.5C320.166 839.582 320.566 851.256 333 863C351 880 408.573 917.902 463.5 938.5C527.5 962.5 587.458 972.166 640.859 956.752C688.5 943 690.799 923.895 689 916C687.201 908.105 685.511 903.5 684.5 895.5C684 891.543 686 882.102 698 876C710 869.898 832.5 809 911.5 766.5C922 761.167 940 743.5 940 705.5C942 644 941.667 642.833 942 639.5"/>
+    <path class="cable-trail cable-trail-2"
+      d="M320.5 831.5C320.166 839.582 320.566 851.256 333 863C351 880 408.573 917.902 463.5 938.5C527.5 962.5 587.458 972.166 640.859 956.752C688.5 943 690.799 923.895 689 916C687.201 908.105 685.511 903.5 684.5 895.5C684 891.543 686 882.102 698 876C710 869.898 832.5 809 911.5 766.5C922 761.167 940 743.5 940 705.5C942 644 941.667 642.833 942 639.5"/>
+    <path class="cable-trail cable-trail-1"
+      d="M320.5 831.5C320.166 839.582 320.566 851.256 333 863C351 880 408.573 917.902 463.5 938.5C527.5 962.5 587.458 972.166 640.859 956.752C688.5 943 690.799 923.895 689 916C687.201 908.105 685.511 903.5 684.5 895.5C684 891.543 686 882.102 698 876C710 869.898 832.5 809 911.5 766.5C922 761.167 940 743.5 940 705.5C942 644 941.667 642.833 942 639.5"/>
     <path class="cable-halo"
       d="M320.5 831.5C320.166 839.582 320.566 851.256 333 863C351 880 408.573 917.902 463.5 938.5C527.5 962.5 587.458 972.166 640.859 956.752C688.5 943 690.799 923.895 689 916C687.201 908.105 685.511 903.5 684.5 895.5C684 891.543 686 882.102 698 876C710 869.898 832.5 809 911.5 766.5C922 761.167 940 743.5 940 705.5C942 644 941.667 642.833 942 639.5"/>
-
-    <!--
-      BATTERY BARS — three traced line segments over the LED indicators.
-      Using exact paths from energy.svg (stroke-width 10 ≈ 4.5px at 480px display).
-    -->
+    <g id="bat-empty">
+      <path class="bat-bar-empty" d="M249.5 720.5L271.5 730"/>
+      <path class="bat-bar-empty" d="M249.5 752L271.5 761.5"/>
+      <path class="bat-bar-empty" d="M249.5 782L271.5 791.5"/>
+    </g>
     <g id="bat-lines">
       <path class="bat-bar" d="M249.5 720.5L271.5 730"/>
       <path class="bat-bar" d="M249.5 752L271.5 761.5"/>
       <path class="bat-bar" d="M249.5 782L271.5 791.5"/>
     </g>
-
   </svg>
-
-  <!-- Debug overlay: shows cable path + bar positions as red/green outlines -->
-  <svg id="debug-overlay" viewBox="0 0 1069 1069">
-    <!-- Cable path in red -->
-    <path d="M320.5 831.5C320.166 839.582 320.566 851.256 333 863C351 880 408.573 917.902 463.5 938.5C527.5 962.5 587.458 972.166 640.859 956.752C688.5 943 690.799 923.895 689 916C687.201 908.105 685.511 903.5 684.5 895.5C684 891.543 686 882.102 698 876C710 869.898 832.5 809 911.5 766.5C922 761.167 940 743.5 940 705.5C942 644 941.667 642.833 942 639.5"
-          fill="none" stroke="red" stroke-width="2" opacity="0.7"/>
-    <!-- Start marker -->
-    <circle cx="320.5" cy="831.5" r="8" fill="none" stroke="red" stroke-width="2"/>
-    <!-- Battery bars in green -->
-    <path d="M249.5 720.5L271.5 730"   fill="none" stroke="#4ade80" stroke-width="3" opacity="0.8"/>
-    <path d="M249.5 752L271.5 761.5"   fill="none" stroke="#4ade80" stroke-width="3" opacity="0.8"/>
-    <path d="M249.5 782L271.5 791.5"   fill="none" stroke="#4ade80" stroke-width="3" opacity="0.8"/>
-  </svg>
-
 </div>
 
-<!-- State toggle controls -->
+<!-- Controls -->
 <div class="controls">
-  <button id="btn-idle"   class="active" onclick="setState('idle')">Idle</button>
-  <button id="btn-export"             onclick="setState('export')">⚡ Export to grid</button>
-  <button id="btn-import"             onclick="setState('import')">⬇ Import from grid</button>
-  <button id="btn-charge"             onclick="setState('charge')">🔋 Battery charging</button>
-  <button id="btn-all"                onclick="setState('all')">All at once</button>
-</div>
 
-<div class="label" style="margin-top:4px;">Battery level</div>
-<div class="controls">
-  <button id="btn-bat-0" onclick="setBatLevel(0)">0 % (empty)</button>
-  <button id="btn-bat-1" onclick="setBatLevel(1)">~20 % (1 bar)</button>
-  <button id="btn-bat-2" onclick="setBatLevel(2)">~50 % (2 bars)</button>
-  <button id="btn-bat-3" class="active" onclick="setBatLevel(3)">~90 % (3 bars)</button>
-</div>
+  <div class="control-row">
+    <span class="control-label">Day / Night</span>
+    <div class="btn-group">
+      <button id="btn-night" class="active" onclick="setMode('night')">Night</button>
+      <button id="btn-day"   onclick="setMode('day')">Day</button>
+    </div>
+  </div>
 
-<div class="controls">
-  <button onclick="document.body.classList.toggle('debug')" style="font-size:11px;padding:6px 12px;">
-    Toggle debug outlines (red = cable path, green = battery bars)
-  </button>
+  <div class="divider"></div>
+
+  <div class="control-row">
+    <span class="control-label">Cable</span>
+    <div class="btn-group">
+      <button id="btn-cable-off"    class="active" onclick="setCable('off')">Off</button>
+      <button id="btn-cable-export" onclick="setCable('export')">Export →</button>
+      <button id="btn-cable-import" onclick="setCable('import')">← Import</button>
+    </div>
+  </div>
+
+  <div class="control-row">
+    <span class="control-label">Battery SOC</span>
+    <div class="btn-group">
+      <button id="btn-soc-0" class="active" onclick="setSoc(0)">0%</button>
+      <button id="btn-soc-1" onclick="setSoc(1)">~33%</button>
+      <button id="btn-soc-2" onclick="setSoc(2)">~66%</button>
+      <button id="btn-soc-3" onclick="setSoc(3)">100%</button>
+    </div>
+  </div>
+
+  <div class="control-row">
+    <span class="control-label">Charging</span>
+    <div class="btn-group">
+      <button id="btn-charge-off" class="active" onclick="setCharging(false)">Off</button>
+      <button id="btn-charge-on"  onclick="setCharging(true)">Charging</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
-  const svg = document.getElementById('scene-anim');
-  const buttons = { idle:'btn-idle', export:'btn-export', import:'btn-import', charge:'btn-charge', all:'btn-all' };
-  const batBtns = ['btn-bat-0','btn-bat-1','btn-bat-2','btn-bat-3'];
-  let currentBatLevel = 3;
+  const anim    = document.getElementById('scene-anim');
+  const houseImg = document.getElementById('house-img');
+  const body    = document.getElementById('body');
 
-  function applyBatLevel(level) {
-    svg.querySelectorAll('.bat-bar').forEach((bar, i) => {
-      bar.classList.toggle('bar-lit', level > 0 && i >= 3 - level);
+  function clearActive(group) {
+    group.forEach(id => document.getElementById(id).classList.remove('active'));
+  }
+
+  function setMode(mode) {
+    clearActive(['btn-night','btn-day']);
+    document.getElementById('btn-' + mode).classList.add('active');
+    if (mode === 'day') {
+      body.classList.add('light-mode');
+      houseImg.src = 'house_day.png';
+    } else {
+      body.classList.remove('light-mode');
+      houseImg.src = 'house_night.png';
+    }
+  }
+
+  function setCable(state) {
+    clearActive(['btn-cable-off','btn-cable-export','btn-cable-import']);
+    document.getElementById('btn-cable-' + state).classList.add('active');
+    anim.classList.remove('cable-export','cable-import');
+    if (state === 'export') anim.classList.add('cable-export');
+    if (state === 'import') anim.classList.add('cable-import');
+  }
+
+  function setSoc(bars) {
+    clearActive(['btn-soc-0','btn-soc-1','btn-soc-2','btn-soc-3']);
+    document.getElementById('btn-soc-' + bars).classList.add('active');
+    const allBars = anim.querySelectorAll('.bat-bar');
+    // bars fill bottom-up: bar[2]=bottom, bar[1]=mid, bar[0]=top
+    allBars.forEach((bar, i) => {
+      const idx = allBars.length - 1 - i; // 0=top bar, 2=bottom bar
+      bar.classList.toggle('bar-lit', idx < bars);
     });
   }
 
-  function setBatLevel(level) {
-    currentBatLevel = level;
-    batBtns.forEach((id, idx) => document.getElementById(id).classList.toggle('active', idx === level));
-    applyBatLevel(level);
+  function setCharging(on) {
+    clearActive(['btn-charge-off','btn-charge-on']);
+    document.getElementById(on ? 'btn-charge-on' : 'btn-charge-off').classList.add('active');
+    anim.classList.toggle('bat-charging', on);
   }
 
-  function setState(state) {
-    svg.classList.remove('cable-export','cable-import','bat-charging');
-    Object.values(buttons).forEach(id => document.getElementById(id).classList.remove('active'));
-    document.getElementById(buttons[state]).classList.add('active');
+  // Build a mask that hides the first 10% of the cable path.
+  // We sample points along that segment and draw a thick black stroke in a <mask>,
+  // so the hide region follows the spline exactly.
+  (function applyCableSkip() {
+    const ns   = 'http://www.w3.org/2000/svg';
+    const ref  = document.querySelector('.cable-halo');
+    const L    = ref.getTotalLength();
+    const skip = L * 0.001;
 
-    if (state === 'export') svg.classList.add('cable-export');
-    if (state === 'import') svg.classList.add('cable-import');
-    if (state === 'charge') svg.classList.add('bat-charging');
-    if (state === 'all')    svg.classList.add('cable-export','bat-charging');
-  }
+    // Continuous line: show from skip→end only
+    document.querySelectorAll('.cable-gap').forEach(p => {
+      p.style.strokeDasharray = `${L - skip} 99999`;
+      p.style.strokeDashoffset = `${skip}`;
+    });
 
-  // initialise to 3 bars on load
-  applyBatLevel(3);
+    // Build mask in defs
+    const defs    = anim.querySelector('defs');
+    const maskEl  = document.createElementNS(ns, 'mask');
+    maskEl.id     = 'm-cable-skip';
+
+    const bg = document.createElementNS(ns, 'rect');
+    bg.setAttribute('width',  '1069');
+    bg.setAttribute('height', '1069');
+    bg.setAttribute('fill',   'white');
+    maskEl.appendChild(bg);
+
+    // Sample the first 10% and draw a thick black stroke over it
+    const steps  = 30;
+    const pts    = [];
+    for (let i = 0; i <= steps; i++) {
+      const pt = ref.getPointAtLength((skip / steps) * i);
+      pts.push(`${pt.x},${pt.y}`);
+    }
+    const hide = document.createElementNS(ns, 'polyline');
+    hide.setAttribute('points',           pts.join(' '));
+    hide.setAttribute('stroke',           'black');
+    hide.setAttribute('stroke-width',     '32'); // covers stroke(20) + blur overflow
+    hide.setAttribute('fill',             'none');
+    hide.setAttribute('stroke-linecap',   'round');
+    hide.setAttribute('stroke-linejoin',  'round');
+    maskEl.appendChild(hide);
+
+    defs.appendChild(maskEl);
+
+    // Apply mask to every cable layer
+    document.querySelectorAll('.cable-gap, .cable-halo, .cable-trail').forEach(p => {
+      p.setAttribute('mask', 'url(#m-cable-skip)');
+    });
+  })();
 </script>
-
 </body>
 </html>

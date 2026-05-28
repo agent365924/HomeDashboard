@@ -1573,4 +1573,48 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('touchmove', () => {
     if (_chartTooltipEl) _chartTooltipEl.style.opacity = '0';
   }, { passive: true });
+
+  /* Cable animation — mask first 0.1% of spline so no dot appears at the battery connector */
+  (function applyCableSkip() {
+    const ns  = 'http://www.w3.org/2000/svg';
+    const ref = document.querySelector('.cable-halo');
+    if (!ref) return;
+    const L    = ref.getTotalLength();
+    const skip = L * 0.001;
+
+    document.querySelectorAll('.cable-gap').forEach(p => {
+      p.style.strokeDasharray  = `${L - skip} 99999`;
+      p.style.strokeDashoffset = `${skip}`;
+    });
+
+    const svg  = document.getElementById('scene-anim');
+    const defs = svg.querySelector('defs');
+    const maskEl = document.createElementNS(ns, 'mask');
+    maskEl.id    = 'm-cable-skip';
+
+    const bg = document.createElementNS(ns, 'rect');
+    bg.setAttribute('width', '1069'); bg.setAttribute('height', '1069');
+    bg.setAttribute('fill', 'white');
+    maskEl.appendChild(bg);
+
+    const steps = 30;
+    const pts   = [];
+    for (let i = 0; i <= steps; i++) {
+      const pt = ref.getPointAtLength((skip / steps) * i);
+      pts.push(`${pt.x},${pt.y}`);
+    }
+    const hide = document.createElementNS(ns, 'polyline');
+    hide.setAttribute('points',          pts.join(' '));
+    hide.setAttribute('stroke',          'black');
+    hide.setAttribute('stroke-width',    '32');
+    hide.setAttribute('fill',            'none');
+    hide.setAttribute('stroke-linecap',  'round');
+    hide.setAttribute('stroke-linejoin', 'round');
+    maskEl.appendChild(hide);
+    defs.appendChild(maskEl);
+
+    document.querySelectorAll('.cable-gap, .cable-halo, .cable-trail').forEach(p => {
+      p.setAttribute('mask', 'url(#m-cable-skip)');
+    });
+  })();
 });
