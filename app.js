@@ -188,36 +188,39 @@ function renderWasteBins(d) {
   const ymd  = dt => `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}`;
   const today    = ymd(now);
   const tomorrow = ymd(tom);
+
+  const BINS = [
+    { key: 'restmuell',   lblId: 'bin-restmuell-date' },
+    { key: 'gruengut',    lblId: 'bin-gruengut-date' },
+    { key: 'gelber_sack', lblId: 'bin-gelber-sack-date' },
+  ];
+
   let anyVisible = false;
 
-  for (const [key, elId] of [
-    ['restmuell',   'bin-restmuell-date'],
-    ['gruengut',    'bin-gruengut-date'],
-    ['gelber_sack', 'bin-gelber-sack-date'],
-  ]) {
-    const el    = document.getElementById(elId);
-    if (!el) continue;
-    const binEl = el.closest('.waste-bin');
-    const next  = d[key];
-    el.classList.remove('bin-today', 'bin-tomorrow');
+  for (const bin of BINS) {
+    const lbl   = document.getElementById(bin.lblId);
+    if (!lbl) continue;
+    const binEl = lbl.closest('.waste-bin');
+    const next  = d[bin.key];
+    lbl.classList.remove('bin-today', 'bin-tomorrow');
 
     if (next === today) {
-      el.textContent = 'heute';
-      el.classList.add('bin-today');
-      if (binEl) binEl.style.display = '';
+      lbl.textContent = 'heute';
+      lbl.classList.add('bin-today');
+      binEl.style.display = '';
       anyVisible = true;
     } else if (next === tomorrow) {
-      el.textContent = 'morgen';
-      el.classList.add('bin-tomorrow');
-      if (binEl) binEl.style.display = '';
+      lbl.textContent = 'morgen';
+      lbl.classList.add('bin-tomorrow');
+      binEl.style.display = '';
       anyVisible = true;
     } else {
-      if (binEl) binEl.style.display = 'none';
+      binEl.style.display = 'none';
     }
   }
 
   const container = document.getElementById('waste-bins');
-  if (container) container.style.display = anyVisible ? 'flex' : 'none';
+  if (container) container.style.display = anyVisible ? '' : 'none';
 }
 
 /* ── Lights ──────────────────────────────────────────────── */
