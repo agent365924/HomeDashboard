@@ -8,8 +8,8 @@ import { getAuth, signInWithEmailAndPassword,
 import { getDatabase, ref, onValue, set as fbSet } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
 /* ── Tariff ──────────────────────────────────────────────── */
-const PRICE_IMPORT_KWH = 0.31;
-const PRICE_EXPORT_KWH = 0.08;
+let priceImportKwh = 0.31;
+let priceExportKwh = 0.08;
 
 /* ── Firebase config ─────────────────────────────────────── */
 const firebaseConfig = {
@@ -149,6 +149,7 @@ function startApp() {
 
 function init() {
   updateHouseImage();
+  subscribeConfig();
   subscribeLive();
   subscribeSensors();
   subscribeNetwork();
@@ -221,6 +222,17 @@ function renderWasteBins(d) {
 
   const container = document.getElementById('waste-bins');
   if (container) container.style.display = anyVisible ? '' : 'none';
+}
+
+/* ── Config ──────────────────────────────────────────────── */
+function subscribeConfig() {
+  onValue(ref(db, '/config'), (snap) => {
+    const cfg = snap.val() || {};
+    if (cfg.price_import_kwh != null) priceImportKwh = cfg.price_import_kwh;
+    if (cfg.price_export_kwh != null) priceExportKwh = cfg.price_export_kwh;
+    renderDailyStats(lastDailyData);
+    if (lastMonthKey != null) renderMonthCard(lastMonthKey, lastMonthData);
+  });
 }
 
 /* ── Lights ──────────────────────────────────────────────── */
@@ -820,6 +832,9 @@ let chart24h        = null;
 let chartClimate    = null;
 let chartNetwork    = null;
 let lastHistoryData = {};
+let lastDailyData   = null;
+let lastMonthKey    = null;
+let lastMonthData   = null;
 let selectedDate    = new Date().toISOString().slice(0, 10);
 let selectedMonth   = new Date().toISOString().slice(0, 7);
 let unsubEnergy     = null;
@@ -1123,8 +1138,8 @@ function renderDailyStats(d) {
   set('today-autonomy', autonomy != null ? fmt(autonomy, 1) + ' %' : '—');
   const costEl = document.getElementById('today-cost');
   if (costEl) {
-    const v = (d.grid_import_kwh || 0) * PRICE_IMPORT_KWH
-            - (d.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
+    const v = (d.grid_import_kwh || 0) * priceImportKwh
+            - (d.grid_export_kwh || 0) * priceExportKwh;
     costEl.textContent = (v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' €';
     costEl.className   = 'sys-val ' + (v <= 0 ? 'cost-pos' : 'cost-neg');
   }
@@ -1185,7 +1200,8 @@ function subscribeDayView() {
 
   if (unsubDaily) { unsubDaily(); unsubDaily = null; }
   unsubDaily = onValue(ref(db, `/totals/daily/${selectedDate}`), (snap) => {
-    renderDailyStats(snap.val());
+    lastDailyData = snap.val();
+    renderDailyStats(lastDailyData);
   });
 }
 
@@ -1230,7 +1246,7 @@ function renderMonthCard(monthKey, t) {
   }
   const [y, m]      = monthKey.split('-');
   const monthName   = new Date(+y, +m - 1, 1).toLocaleString('de-DE', { month: 'long', year: 'numeric' });
-  const cost        = (t.grid_import_kwh || 0) * PRICE_IMPORT_KWH - (t.grid_export_kwh || 0) * PRICE_EXPORT_KWH;
+  const cost        = (t.grid_import_kwh || 0) * priceImportKwh - (t.grid_export_kwh || 0) * priceExportKwh;
   const costClass   = cost <= 0 ? 'cost-pos' : 'cost-neg';
   const costStr     = (cost < 0 ? '−' : '') + fmt(Math.abs(cost), 2) + ' €';
   const autonomy    = t.consumption_kwh > 0 ? Math.min(100, Math.max(0, (1 - (t.grid_import_kwh || 0) / t.consumption_kwh) * 100)) : null;
@@ -1285,11 +1301,15 @@ function subscribeMonthView() {
   const todayMonth = new Date().toISOString().slice(0, 7);
   if (selectedMonth === todayMonth) {
     unsubMonth = onValue(ref(db, '/totals/daily'), (snap) => {
-      renderMonthCard(selectedMonth, aggregateMonthFromDaily(snap.val() || {}, selectedMonth));
+      lastMonthKey  = selectedMonth;
+      lastMonthData = aggregateMonthFromDaily(snap.val() || {}, selectedMonth);
+      renderMonthCard(lastMonthKey, lastMonthData);
     });
   } else {
     unsubMonth = onValue(ref(db, `/totals/monthly/${selectedMonth}`), (snap) => {
-      renderMonthCard(selectedMonth, snap.val());
+      lastMonthKey  = selectedMonth;
+      lastMonthData = snap.val();
+      renderMonthCard(lastMonthKey, lastMonthData);
     });
   }
 }
