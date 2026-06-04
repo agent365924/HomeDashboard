@@ -874,7 +874,7 @@ function renderChart24h(raw) {
           pointRadius: 0,
           tension: 0.3,
           yAxisID: 'y',
-          order: 1,
+          order: 3,
         },
         {
           type: 'line',
@@ -886,7 +886,7 @@ function renderChart24h(raw) {
           pointRadius: 0,
           tension: 0.3,
           yAxisID: 'y',
-          order: 1,
+          order: 2,
         },
         {
           type: 'line',
