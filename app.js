@@ -5,7 +5,7 @@
 import { initializeApp }               from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword,
          onAuthStateChanged }          from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getDatabase, ref, onValue, set as fbSet } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+import { getDatabase, ref, onValue, get, set as fbSet } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
 /* ── Tariff ──────────────────────────────────────────────── */
 let priceImportKwh = 0.31;
@@ -765,10 +765,10 @@ function subscribeNetwork() {
     if (!d) return;
     set('info-dl',   d.download_mbps != null ? fmt(d.download_mbps, 0) : '—');
     set('info-up',   d.upload_mbps   != null ? fmt(d.upload_mbps,   0) : '—');
-    set('info-ping', d.ping_ms       != null ? fmt(d.ping_ms,       0) : '—');
+    set('info-ping', d.ping_ms       != null ? fmt(Math.min(d.ping_ms, 999), 0) : '—');
     set('net-dl',    d.download_mbps != null ? fmt(d.download_mbps, 0) + ' Mbps' : '—');
     set('net-up',    d.upload_mbps   != null ? fmt(d.upload_mbps,   0) + ' Mbps' : '—');
-    set('net-ping',  d.ping_ms       != null ? fmt(d.ping_ms,       0) + ' ms'   : '—');
+    set('net-ping',  d.ping_ms       != null ? fmt(Math.min(d.ping_ms, 999), 0) + ' ms' : '—');
     if (d.timestamp) {
       const ts = new Date(d.timestamp * 1000);
       set('net-ts', ts.toLocaleString('de-DE', {
@@ -837,6 +837,7 @@ let lastMonthKey    = null;
 let lastMonthData   = null;
 let selectedDate    = new Date().toISOString().slice(0, 10);
 let selectedMonth   = new Date().toISOString().slice(0, 7);
+let consLabelCache  = { date: null, prevVals: null };
 let unsubEnergy     = null;
 let unsubDaily      = null;
 let unsubMonth      = null;
@@ -962,6 +963,7 @@ function renderChart24h(raw) {
       },
     },
   });
+  positionConsLabel();
 }
 
 function renderChartClimate(raw) {
@@ -1111,6 +1113,66 @@ function renderChartNetwork(raw) {
 }
 
 /* ── Daily stats ─────────────────────────────────────────── */
+function positionConsLabel() {
+  if (!chart24h) return;
+  const el = document.getElementById('chart-cons-label');
+  if (!el) return;
+  const ca = chart24h.chartArea;
+  if (!ca) return;
+  el.style.left = (ca.left + 8) + 'px';
+  el.style.top  = (ca.top  + 8) + 'px';
+}
+
+async function updateConsLabel() {
+  const el = document.getElementById('chart-cons-label');
+  if (!el) return;
+
+  if (!lastDailyData || lastDailyData.consumption_kwh == null) {
+    el.style.display = 'none';
+    return;
+  }
+
+  const consKwh = lastDailyData.consumption_kwh;
+  let prevVals;
+
+  if (consLabelCache.date === selectedDate && consLabelCache.prevVals != null) {
+    prevVals = consLabelCache.prevVals;
+  } else {
+    const base = new Date(selectedDate + 'T12:00:00');
+    prevVals = await Promise.all([1, 2, 3].map(async i => {
+      const pd = new Date(base);
+      pd.setDate(base.getDate() - i);
+      const snap = await get(ref(db, `/totals/daily/${pd.toISOString().slice(0, 10)}`));
+      return snap.val()?.consumption_kwh ?? null;
+    }));
+    consLabelCache = { date: selectedDate, prevVals };
+  }
+
+  const valid = prevVals.filter(v => v != null);
+  let trendSpan = '';
+  if (valid.length > 0) {
+    const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
+    if (avg > 0) {
+      const pct   = ((consKwh - avg) / avg) * 100;
+      const clr   = pct > 0 ? '#e06464' : '#50b87a';
+      const arrow = pct > 0 ? '▲' : '▼';
+      const sign  = pct > 0 ? '+' : '';
+      trendSpan = `<span style="color:${clr};font-weight:700;margin-left:10px"><span style="font-size:9px">${arrow}</span> ${sign}${fmt(pct, 0)} %</span>`;
+    }
+  }
+
+  const now = new Date();
+  const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const hoursElapsed = selectedDate === localDate
+    ? now.getHours() + now.getMinutes() / 60
+    : 24;
+  const divisor = Math.max(hoursElapsed, 0.5);
+  el.innerHTML = `<span class="cons-label-key">ø Consumption</span>`
+               + `<span class="cons-label-val">${fmt(consKwh / divisor, 2)} kW/h${trendSpan}</span>`;
+  el.style.display = '';
+  positionConsLabel();
+}
+
 function renderDailyStats(d) {
   if (!d) {
     ['today-gen','today-peak-gen','today-cons','today-peak-cons',
@@ -1119,6 +1181,7 @@ function renderDailyStats(d) {
      'net-peak-dl','net-peak-up'].forEach(id => set(id, '—'));
     const costEl = document.getElementById('today-cost');
     if (costEl) { costEl.textContent = '—'; costEl.className = 'sys-val'; }
+    updateConsLabel();
     return;
   }
   set('today-gen',       fmt(d.generation_kwh,  1) + ' kWh');
@@ -1143,15 +1206,19 @@ function renderDailyStats(d) {
     costEl.textContent = (v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' €';
     costEl.className   = 'sys-val ' + (v <= 0 ? 'cost-pos' : 'cost-neg');
   }
+  updateConsLabel();
 }
 
 /* ── Day navigation ──────────────────────────────────────── */
 function updateStepperUI() {
   const todayStr = new Date().toISOString().slice(0, 10);
   const isToday  = selectedDate === todayStr;
-  const minDate  = new Date();
+
+  const minDate    = new Date();
   minDate.setDate(minDate.getDate() - 30);
-  const atMin    = new Date(selectedDate + 'T12:00:00') <= minDate;
+  const atFirst    = new Date(selectedDate + 'T12:00:00') <= minDate;
+  const atLast     = isToday;
+
   const labelTxt = isToday
     ? 'Today'
     : new Date(selectedDate + 'T12:00:00').toLocaleDateString('de-DE', {
@@ -1164,11 +1231,11 @@ function updateStepperUI() {
     const btnToday = document.getElementById(`${p}-today`);
     if (!label) continue;
     label.textContent         = labelTxt;
-    btnNext.disabled          = isToday;
+    btnNext.disabled          = atLast;
     btnNext.style.visibility  = isToday ? 'hidden' : '';
     btnToday.disabled         = isToday;
     btnToday.style.visibility = isToday ? 'hidden' : '';
-    btnPrev.disabled          = atMin;
+    btnPrev.disabled          = atFirst;
   }
 }
 
@@ -1215,7 +1282,14 @@ function stepDay(delta) {
   minDate.setDate(minDate.getDate() - 30);
   if (d < minDate) return;
   selectedDate = newDateStr;
-  subscribeDayView();
+  const newMonth = newDateStr.slice(0, 7);
+  if (newMonth !== selectedMonth) {
+    selectedMonth = newMonth;
+    subscribeDayView();
+    subscribeMonthView();
+  } else {
+    subscribeDayView();
+  }
 }
 
 /* ── Month navigation ────────────────────────────────────── */
@@ -1326,6 +1400,10 @@ function stepMonth(delta) {
   const monthsBack = (ty - y) * 12 + (tm - m);
   if (monthsBack > 36) return;
   selectedMonth = newMonth;
+  selectedDate  = newMonth === todayMonth
+    ? new Date().toISOString().slice(0, 10)
+    : `${newMonth}-15`;
+  subscribeDayView();
   subscribeMonthView();
 }
 
@@ -1479,25 +1557,33 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('day-prev').addEventListener('click', () => stepDay(-1));
   document.getElementById('day-next').addEventListener('click', () => stepDay(1));
   document.getElementById('day-today').addEventListener('click', () => {
-    selectedDate = new Date().toISOString().slice(0, 10);
+    selectedDate  = new Date().toISOString().slice(0, 10);
+    selectedMonth = new Date().toISOString().slice(0, 7);
     subscribeDayView();
+    subscribeMonthView();
   });
   document.getElementById('day-c-prev').addEventListener('click', () => stepDay(-1));
   document.getElementById('day-c-next').addEventListener('click', () => stepDay(1));
   document.getElementById('day-c-today').addEventListener('click', () => {
-    selectedDate = new Date().toISOString().slice(0, 10);
+    selectedDate  = new Date().toISOString().slice(0, 10);
+    selectedMonth = new Date().toISOString().slice(0, 7);
     subscribeDayView();
+    subscribeMonthView();
   });
   document.getElementById('day-n-prev').addEventListener('click', () => stepDay(-1));
   document.getElementById('day-n-next').addEventListener('click', () => stepDay(1));
   document.getElementById('day-n-today').addEventListener('click', () => {
-    selectedDate = new Date().toISOString().slice(0, 10);
+    selectedDate  = new Date().toISOString().slice(0, 10);
+    selectedMonth = new Date().toISOString().slice(0, 7);
     subscribeDayView();
+    subscribeMonthView();
   });
   document.getElementById('month-prev').addEventListener('click', () => stepMonth(-1));
   document.getElementById('month-next').addEventListener('click', () => stepMonth(1));
   document.getElementById('month-today').addEventListener('click', () => {
     selectedMonth = new Date().toISOString().slice(0, 7);
+    selectedDate  = new Date().toISOString().slice(0, 10);
+    subscribeDayView();
     subscribeMonthView();
   });
   document.getElementById('email-input')
