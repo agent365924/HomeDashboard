@@ -870,7 +870,9 @@ function renderChart24h(raw) {
           label: 'Generation',
           data: genData,
           borderColor: '#facc15',
-          backgroundColor: 'transparent',
+          backgroundColor: document.documentElement.classList.contains('light')
+            ? 'rgba(250, 204, 21, 0.18)' : 'rgba(120, 95, 15, 0.22)',
+          fill: 'origin',
           borderWidth: 1.5,
           pointRadius: 0,
           tension: 0.3,
@@ -882,7 +884,9 @@ function renderChart24h(raw) {
           label: 'Consumption',
           data: consData,
           borderColor: '#fb923c',
-          backgroundColor: 'transparent',
+          backgroundColor: document.documentElement.classList.contains('light')
+            ? 'rgba(251, 146, 60, 0.20)' : 'rgba(58, 28, 6, 0.48)',
+          fill: 'origin',
           borderWidth: 1.5,
           pointRadius: 0,
           tension: 0.3,
@@ -988,7 +992,10 @@ function renderChartClimate(raw) {
         {
           type: 'line', label: 'Outdoor',
           data: entries.map(([, v]) => v.temperature_out ?? null),
-          borderColor: '#facc15', backgroundColor: 'transparent',
+          borderColor: '#facc15',
+          backgroundColor: document.documentElement.classList.contains('light')
+            ? 'rgba(250, 204, 21, 0.18)' : 'rgba(120, 95, 15, 0.22)',
+          fill: 'origin',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
         },
         {
@@ -1064,12 +1071,17 @@ function renderChartNetwork(raw) {
           data: entries.map(([, v]) => v.download_mbps ?? null),
           borderColor: '#4ade80', backgroundColor: 'transparent',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
+          order: 2,
         },
         {
           type: 'line', label: 'Up',
           data: entries.map(([, v]) => v.upload_mbps ?? null),
-          borderColor: '#fb923c', backgroundColor: 'transparent',
+          borderColor: '#fb923c',
+          backgroundColor: document.documentElement.classList.contains('light')
+            ? 'rgba(251, 146, 60, 0.20)' : 'rgba(58, 28, 6, 0.48)',
+          fill: 'origin',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
+          order: 3,
         },
         {
           type: 'line', label: 'Ping',
