@@ -1131,8 +1131,8 @@ function positionConsLabel() {
   if (!el) return;
   const ca = chart24h.chartArea;
   if (!ca) return;
-  el.style.left = (ca.left + 8) + 'px';
-  el.style.top  = (ca.top  + 8) + 'px';
+  el.style.left = (ca.left + 4) + 'px';
+  el.style.top  = (ca.top  + 4) + 'px';
 }
 
 async function updateConsLabel() {
@@ -1160,25 +1160,25 @@ async function updateConsLabel() {
     consLabelCache = { date: selectedDate, prevVals };
   }
 
-  const valid = prevVals.filter(v => v != null);
-  let trendSpan = '';
-  if (valid.length > 0) {
-    const avg = valid.reduce((a, b) => a + b, 0) / valid.length;
-    if (avg > 0) {
-      const pct   = ((consKwh - avg) / avg) * 100;
-      const clr   = pct > 0 ? '#e06464' : '#50b87a';
-      const arrow = pct > 0 ? '▲' : '▼';
-      const sign  = pct > 0 ? '+' : '';
-      trendSpan = `<span style="color:${clr};font-weight:700;margin-left:10px"><span style="font-size:9px">${arrow}</span> ${sign}${fmt(pct, 0)} %</span>`;
-    }
-  }
-
   const now = new Date();
   const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const hoursElapsed = selectedDate === localDate
     ? now.getHours() + now.getMinutes() / 60
     : 24;
   const divisor = Math.max(hoursElapsed, 0.5);
+
+  const valid = prevVals.filter(v => v != null);
+  let trendSpan = '';
+  if (valid.length > 0) {
+    const prevAvg = valid.reduce((a, b) => a + b, 0) / valid.length;
+    if (prevAvg > 0) {
+      const pct   = ((consKwh / divisor - prevAvg / 24) / (prevAvg / 24)) * 100;
+      const clr   = pct > 0 ? '#e06464' : '#50b87a';
+      const arrow = pct > 0 ? '▲' : '▼';
+      const sign  = pct > 0 ? '+' : '';
+      trendSpan = `<span style="color:${clr};margin-left:10px"><span style="font-size:9px">${arrow}</span> ${sign}${fmt(pct, 0)} %</span>`;
+    }
+  }
   el.innerHTML = `<span class="cons-label-key">ø Consumption</span>`
                + `<span class="cons-label-val">${fmt(consKwh / divisor, 2)} kW/h${trendSpan}</span>`;
   el.style.display = '';
