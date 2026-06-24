@@ -1179,8 +1179,8 @@ async function updateConsLabel() {
       trendSpan = `<span style="color:${clr};margin-left:10px"><span style="font-size:9px">${arrow}</span> ${sign}${fmt(pct, 0)} %</span>`;
     }
   }
-  el.innerHTML = `<span class="cons-label-key">ø Consumption</span>`
-               + `<span class="cons-label-val">${fmt(consKwh / divisor, 2)} kW/h${trendSpan}</span>`;
+  el.innerHTML = `<span class="cons-label-key">Consumption</span>`
+               + `<span class="cons-label-val">ø ${fmt(consKwh / divisor, 2)} kW/h${trendSpan}</span>`;
   el.style.display = '';
   positionConsLabel();
 }
