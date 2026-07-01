@@ -346,13 +346,23 @@ function rebootRouter() {
 
   btn.disabled = true;
   spinner.classList.remove('hidden');
-  label.textContent = 'Restarts (4min)';
 
-  setTimeout(() => {
-    btn.disabled = false;
-    spinner.classList.add('hidden');
-    label.textContent = 'Restart Router';
-  }, 4 * 60 * 1000);
+  const endAt = Date.now() + 4 * 60 * 1000;
+  const tick = () => {
+    const remaining = Math.max(0, endAt - Date.now());
+    if (remaining <= 0) {
+      clearInterval(interval);
+      btn.disabled = false;
+      spinner.classList.add('hidden');
+      label.textContent = 'Restart Router';
+      return;
+    }
+    const mins = Math.floor(remaining / 60000);
+    const secs = Math.floor((remaining % 60000) / 1000);
+    label.textContent = `Restarts (${mins}:${String(secs).padStart(2, '0')})`;
+  };
+  const interval = setInterval(tick, 1000);
+  tick();
 }
 
 function xyToHex(x, y) {
@@ -857,6 +867,7 @@ let lastMonthData   = null;
 let selectedDate    = new Date().toISOString().slice(0, 10);
 let selectedMonth   = new Date().toISOString().slice(0, 7);
 let consLabelCache  = { date: null, prevVals: null };
+let climLabelCache  = { date: null, prevVals: null };
 let unsubEnergy     = null;
 let unsubDaily      = null;
 let unsubMonth      = null;
@@ -916,7 +927,7 @@ function renderChart24h(raw) {
           type: 'line',
           label: 'Battery',
           data: socData,
-          borderColor: '#22c55e',
+          borderColor: '#60a5fa',
           backgroundColor: 'transparent',
           borderWidth: 1.5,
           pointRadius: 0,
@@ -976,7 +987,7 @@ function renderChart24h(raw) {
           min: 0,
           max: 100,
           ticks: {
-            color: '#22c55e',
+            color: '#60a5fa',
             font: { family: 'Barlow', size: m ? 11 : 12 },
             callback: (v, i) => m ? (i === 0 ? v + ' %' : v) : v + ' %',
           },
@@ -1026,7 +1037,7 @@ function renderChartClimate(raw) {
         {
           type: 'line', label: 'Humidity',
           data: entries.map(([, v]) => v.humidity_in ?? null),
-          borderColor: '#a78bfa', backgroundColor: 'transparent',
+          borderColor: '#60a5fa', backgroundColor: 'transparent',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'hum',
         },
       ],
@@ -1058,12 +1069,13 @@ function renderChartClimate(raw) {
         },
         hum: {
           position: 'right', min: 0, max: 100,
-          ticks: { color: '#a78bfa', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' %' : v) : v + ' %' },
+          ticks: { color: '#60a5fa', font: { family: 'Barlow', size: m ? 11 : 12 }, callback: (v, i) => m ? (i === 0 ? v + ' %' : v) : v + ' %' },
           grid: { display: false }, border: { color: gridClr },
         },
       },
     },
   });
+  updateTempLabel();
 }
 
 function renderChartNetwork(raw) {
@@ -1198,10 +1210,69 @@ async function updateConsLabel() {
       trendSpan = `<span style="color:${clr};margin-left:10px"><span style="font-size:9px">${arrow}</span> ${sign}${fmt(pct, 0)} %</span>`;
     }
   }
-  el.innerHTML = `<span class="cons-label-key">Consumption</span>`
-               + `<span class="cons-label-val">ø ${fmt(consKwh / divisor, 2)} kW/h${trendSpan}</span>`;
+  el.innerHTML = `<span class="cons-label-val">ø ${fmt(consKwh / divisor, 2)} kW/h${trendSpan}</span>`;
   el.style.display = '';
   positionConsLabel();
+}
+
+function positionTempLabel() {
+  if (!chartClimate) return;
+  const el = document.getElementById('chart-temp-label');
+  if (!el) return;
+  const ca = chartClimate.chartArea;
+  if (!ca) return;
+  el.style.left = (ca.left + 4) + 'px';
+  el.style.top  = (ca.top  + 4) + 'px';
+}
+
+async function updateTempLabel() {
+  const el = document.getElementById('chart-temp-label');
+  if (!el) return;
+
+  const temps = Object.values(lastHistoryData)
+    .map(v => v.temperature_out)
+    .filter(v => v != null);
+
+  if (!lastDailyData || lastDailyData.peak_temperature_out == null || temps.length === 0) {
+    el.style.display = 'none';
+    return;
+  }
+
+  const minT  = Math.min(...temps);
+  const maxT  = Math.max(...temps);
+  const peakT = lastDailyData.peak_temperature_out;
+  let prevVals;
+
+  if (climLabelCache.date === selectedDate && climLabelCache.prevVals != null) {
+    prevVals = climLabelCache.prevVals;
+  } else {
+    const base = new Date(selectedDate + 'T12:00:00');
+    prevVals = await Promise.all([1, 2].map(async i => {
+      const pd = new Date(base);
+      pd.setDate(base.getDate() - i);
+      const snap = await get(ref(db, `/totals/daily/${pd.toISOString().slice(0, 10)}`));
+      return snap.val()?.peak_temperature_out ?? null;
+    }));
+    climLabelCache = { date: selectedDate, prevVals };
+  }
+
+  const valid = prevVals.filter(v => v != null);
+  let trendSpan = '';
+  if (valid.length > 0) {
+    const prevAvg = valid.reduce((a, b) => a + b, 0) / valid.length;
+    if (prevAvg !== 0) {
+      const pct   = ((peakT - prevAvg) / Math.abs(prevAvg)) * 100;
+      const clr   = pct > 0 ? '#e06464' : '#50b87a';
+      const arrow = pct > 0 ? '▲' : '▼';
+      const sign  = pct > 0 ? '+' : '';
+      trendSpan = `<span style="color:${clr};margin-left:10px"><span style="font-size:9px">${arrow}</span> ${sign}${fmt(pct, 0)} %</span>`;
+    }
+  }
+  el.innerHTML = `<span class="cons-label-val">`
+               + `<span style="color:#60a5fa;font-size:9px">▼</span> ${fmt(minT, 1)}°`
+               + ` <span style="color:#e06464;font-size:9px">▲</span> ${fmt(maxT, 1)}°C${trendSpan}</span>`;
+  el.style.display = '';
+  positionTempLabel();
 }
 
 function renderDailyStats(d) {
@@ -1213,6 +1284,7 @@ function renderDailyStats(d) {
     const costEl = document.getElementById('today-cost');
     if (costEl) { costEl.textContent = '—'; costEl.className = 'sys-val'; }
     updateConsLabel();
+    updateTempLabel();
     return;
   }
   set('today-gen',       fmt(d.generation_kwh,  1) + ' kWh');
@@ -1238,6 +1310,7 @@ function renderDailyStats(d) {
     costEl.className   = 'sys-val ' + (v <= 0 ? 'cost-pos' : 'cost-neg');
   }
   updateConsLabel();
+  updateTempLabel();
 }
 
 /* ── Day navigation ──────────────────────────────────────── */

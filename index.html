@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home Dashboard</title>
+  <title>Smart Home</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
   <div class="login-card">
     <div class="login-header">
       <div class="login-icon">🏠</div>
-      <h2 class="login-title">Home Dashboard</h2>
+      <h2 class="login-title">Smart Home</h2>
       <p class="login-subtitle">Sign in to continue</p>
     </div>
     <div class="login-form">
@@ -41,7 +41,7 @@
   <!-- Header -->
   <div class="header">
     <div>
-      <div class="title">Home Dashboard</div>
+      <div class="title">Smart Home</div>
       <div class="subtitle-row">
         <div class="subtitle" id="last-update">Connecting…</div>
         <div class="presence-bubbles" id="presence-bubbles"></div>
@@ -376,6 +376,7 @@
       <div class="sys-card">
         <div class="chart-wrap" id="chart-wrap-climate">
           <canvas id="chart-climate"></canvas>
+          <div class="chart-cons-label" id="chart-temp-label" style="display:none"></div>
         </div>
         <div class="chart-no-data hidden" id="chart-no-data-climate">No chart data available</div>
       </div>
