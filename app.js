@@ -346,13 +346,13 @@ function rebootRouter() {
 
   btn.disabled = true;
   spinner.classList.remove('hidden');
-  label.textContent = 'Restarts (2min)';
+  label.textContent = 'Restarts (4min)';
 
   setTimeout(() => {
     btn.disabled = false;
     spinner.classList.add('hidden');
     label.textContent = 'Restart Router';
-  }, 2 * 60 * 1000);
+  }, 4 * 60 * 1000);
 }
 
 function xyToHex(x, y) {
@@ -1088,7 +1088,7 @@ function renderChartNetwork(raw) {
         {
           type: 'line', label: 'Down',
           data: entries.map(([, v]) => v.download_mbps ?? null),
-          borderColor: '#4ade80', backgroundColor: 'transparent',
+          borderColor: '#22c55e', backgroundColor: 'transparent',
           borderWidth: 1.5, pointRadius: 0, tension: 0.3, spanGaps: true, yAxisID: 'y',
           order: 2,
         },
