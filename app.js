@@ -940,6 +940,7 @@ function renderChart24h(raw) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: {
@@ -996,6 +997,7 @@ function renderChart24h(raw) {
         },
       },
     },
+    plugins: [{ afterLayout: () => positionConsLabel() }],
   });
   positionConsLabel();
 }
@@ -1043,7 +1045,7 @@ function renderChartClimate(raw) {
       ],
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false, animation: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { labels: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 13 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: m ? 10 : 16 } },
@@ -1074,6 +1076,7 @@ function renderChartClimate(raw) {
         },
       },
     },
+    plugins: [{ afterLayout: () => positionTempLabel() }],
   });
   updateTempLabel();
 }
@@ -1123,7 +1126,7 @@ function renderChartNetwork(raw) {
       ],
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false, animation: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: { labels: { color: textClr, font: { family: 'Barlow', size: m ? 11 : 13 }, usePointStyle: true, pointStyle: 'circle', boxWidth: 8, boxHeight: 8, padding: m ? 10 : 16 } },
