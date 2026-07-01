@@ -446,6 +446,7 @@ html.light .bat-bar              { stroke: #00e676; }
   margin-bottom: 10px;
   text-align: center;
 }
+.section-label-security { padding: 6.25px 0 9.75px; margin-bottom: 6.5px; }
 
 /* ── System status ─────────────────────────────────────────── */
 .sys-card:has(.chart-wrap) { padding-top: 2px; padding-bottom: 10px; }
@@ -604,6 +605,40 @@ html.light .badge-warn { background: #f0e8d8; color: #8a6030; }
 }
 .btn-primary:hover   { background: #1d4ed8; }
 .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.net-reboot-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 40%;
+  margin: 32px auto 0;
+  background: #dc2626;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 20px;
+  color: #fff;
+  font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background .2s, opacity .2s;
+}
+.net-reboot-btn:hover:not(:disabled) {
+  background: #b91c1c;
+}
+.net-reboot-btn:active:not(:disabled) {
+  background: #991b1b;
+}
+.net-reboot-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.net-reboot-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: net-reboot-spin .7s linear infinite;
+}
+.net-reboot-spinner.hidden { display: none; }
+@keyframes net-reboot-spin { to { transform: rotate(360deg); } }
 
 /* ── Scene status pills ────────────────────────────────────── */
 .scene-status {
