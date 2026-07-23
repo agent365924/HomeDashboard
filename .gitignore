@@ -8,6 +8,7 @@ presence.service
 prd-presence-detection.md
 prd-hue-lighting.md
 handoff-hue-next.md
+handoff-starlink-migration.md
 hue/
 .DS_Store
 .claude/

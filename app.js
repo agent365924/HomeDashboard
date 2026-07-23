@@ -336,35 +336,6 @@ function sendLightCommand(type, id, payload) {
   fbSet(ref(db, '/hue/commands/' + cmdId), { type, id, payload, ts: Date.now() });
 }
 
-function rebootRouter() {
-  const btn     = document.getElementById('net-reboot-btn');
-  const spinner = document.querySelector('.net-reboot-spinner');
-  const label   = document.getElementById('net-reboot-label');
-
-  const cmdId = `${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-  fbSet(ref(db, '/network/commands/' + cmdId), { type: 'reboot', ts: Date.now() });
-
-  btn.disabled = true;
-  spinner.classList.remove('hidden');
-
-  const endAt = Date.now() + 4 * 60 * 1000;
-  const tick = () => {
-    const remaining = Math.max(0, endAt - Date.now());
-    if (remaining <= 0) {
-      clearInterval(interval);
-      btn.disabled = false;
-      spinner.classList.add('hidden');
-      label.textContent = 'Restart Router';
-      return;
-    }
-    const mins = Math.floor(remaining / 60000);
-    const secs = Math.floor((remaining % 60000) / 1000);
-    label.textContent = `Restarts (${mins}:${String(secs).padStart(2, '0')})`;
-  };
-  const interval = setInterval(tick, 1000);
-  tick();
-}
-
 function xyToHex(x, y) {
   const Y = 1.0;
   const X = (Y / y) * x;
@@ -1693,7 +1664,6 @@ document.addEventListener('DOMContentLoaded', () => {
     subscribeDayView();
     subscribeMonthView();
   });
-  document.getElementById('net-reboot-btn').addEventListener('click', rebootRouter);
   document.getElementById('email-input')
     .addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   document.getElementById('password-input')

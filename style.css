@@ -610,40 +610,6 @@ html.light .btn-primary { background: rgba(180, 160, 112, 0.40); color: var(--te
 html.light .btn-primary:hover { background: rgba(180, 160, 112, 0.55); }
 .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 
-.net-reboot-btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  width: 256px;
-  margin: 32px auto 0;
-  background: #dc2626;
-  border: none;
-  border-radius: 12px;
-  padding: 8px 20px;
-  color: #fff;
-  font-family: 'Barlow Semi Condensed', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: background .2s, opacity .2s;
-}
-.net-reboot-btn:hover:not(:disabled) {
-  background: #b91c1c;
-}
-.net-reboot-btn:active:not(:disabled) {
-  background: #991b1b;
-}
-.net-reboot-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-.net-reboot-spinner {
-  width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: net-reboot-spin .7s linear infinite;
-}
-.net-reboot-spinner.hidden { display: none; }
-@keyframes net-reboot-spin { to { transform: rotate(360deg); } }
-
 /* ── Scene status pills ────────────────────────────────────── */
 .scene-status {
   position: absolute;
